@@ -11,7 +11,7 @@ function drawCharacters(dt){
   const sc = Math.min(0.62, 0.3 + S.spacing*1.1), moving = Math.abs(S.target - S.x) > 0.1;
   S.formation.slice(0, p.items.length).sort((a,b)=>a[1]-b[1]).forEach(([dx,dz]) => { const it = poolTake(p); if (!it) return;
     it.obj.position.set(S.x + dx, 0.05, CFG.squadZ + dz); it.obj.rotation.set(0, Math.PI + (S.target - S.x)*0.08, G.recoil*0.05); it.obj.scale.setScalar(sc); blobs.push({ x: S.x + dx, z: CFG.squadZ + dz, r: 0.28 });
-    play(it, moving ? 'Run' : 'Idle', { speed: 1 + it.seed*0.2 }); });
+    play(it, moving ? 'RifleRun' : (G.recoil > 0.35 ? 'RifleFire' : 'RifleIdle'), { speed: moving ? 1.1 + it.seed*0.2 : 1.4 }); });
   poolEnd(p, dt);
   // enemies
   for (const k of ['grunt','runner','brute']) poolBegin(pools[k]);
