@@ -7,7 +7,7 @@ const gltfLoader = new THREE.GLTFLoader();
 
 function loadModel(k){
   return new Promise(res => gltfLoader.load(MODELS[k], g => {
-    g.scene.traverse(o => { if (o.isMesh){ o.castShadow = true; o.frustumCulled = false; } });
+    g.scene.traverse(o => { if (o.isMesh){ o.castShadow = true; o.frustumCulled = false; toPBR(o, k === 'robot' ? { roughness: 0.4, metalness: 0.6 } : { roughness: 0.6, metalness: 0.2 }); } });
     gltfs[k] = g; res(g);
   }, undefined, e => { console.warn('model failed', k, e); res(null); }));
 }
@@ -17,7 +17,7 @@ function makePool(k, n, opts){
   const items = [];
   for (let i=0;i<n;i++){
     const obj = THREE.SkeletonUtils.clone(g.scene);
-    obj.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); if (opts.color) o.material.color.set(opts.color); } });
+    obj.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); if (opts.color) o.material.color.set(opts.color); if (o.material.isMeshStandardMaterial){ o.material.roughness = Math.min(o.material.roughness, 0.6); o.material.envMapIntensity = 0.55; } } });
     const mixer = new THREE.AnimationMixer(obj), actions = {};
     for (const clip of g.animations) actions[clip.name] = mixer.clipAction(clip);
     obj.visible = false; scene.add(obj);

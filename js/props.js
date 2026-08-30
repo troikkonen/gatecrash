@@ -8,18 +8,18 @@ const PROPS = {};
   const postGeo = new THREE.BoxGeometry(0.16, 1.5, 0.16); postGeo.translate(0, 0.75, 0);
   const panelGeo = new THREE.BoxGeometry(CFG.laneW - 0.5, 0.9, 0.08); panelGeo.translate(0, 0.9, 0);
   const capGeo = new THREE.BoxGeometry(0.22, 0.12, 0.22); capGeo.translate(0, 1.56, 0);
-  const postMat = new THREE.MeshLambertMaterial({ color: 0x3a3f4a }), capMat = new THREE.MeshLambertMaterial({ color: 0xffd447, emissive: 0x6b5200 });
+  const postMat = new THREE.MeshStandardMaterial({ color: 0x7c8494, roughness: 0.35, metalness: 0.9 }), capMat = new THREE.MeshStandardMaterial({ color: 0xffd447, emissive: 0xffb300, emissiveIntensity: 0.8, roughness: 0.4, metalness: 0.5 });
   PROPS.gates = Array.from({length: 24}, () => {
     const g = new THREE.Group();
     for (const s of [-1, 1]){ const p = new THREE.Mesh(postGeo, postMat); p.position.x = s*(CFG.laneW/2 - 0.22); p.castShadow = true; g.add(p); const c = new THREE.Mesh(capGeo, capMat); c.position.x = p.position.x; g.add(c); }
-    const panel = new THREE.Mesh(panelGeo, new THREE.MeshLambertMaterial({ color: 0x4fc3ff, emissive: 0x4fc3ff, emissiveIntensity: 0.35, transparent: true, opacity: 0.92 })); panel.castShadow = true; g.add(panel);
+    const panel = new THREE.Mesh(panelGeo, new THREE.MeshStandardMaterial({ color: 0x4fc3ff, emissive: 0x4fc3ff, emissiveIntensity: 1.1, roughness: 0.3, metalness: 0.2, transparent: true, opacity: 0.92 })); panel.castShadow = true; g.add(panel);
     const label = new THREE.Sprite(new THREE.SpriteMaterial({ depthTest: false, transparent: true })); label.position.set(0, 0.95, 0.1); g.add(label);
     g.visible = false; scene.add(g); return { g, panel, label };
   });
 })();
 function drawGate(slot, gate){
   const { g, panel, label } = slot;
-  g.position.set(laneX(gate.lane), gate.fall ? -gate.fall*4 : 0, gate.z); g.visible = true;
+  g.position.set(laneX(gate.lane), 0.05 + (gate.fall ? -gate.fall*4 : 0), gate.z); g.visible = true;
   const col = gate.flash > 0 ? '#ffffff' : gate.type === 'mul' ? '#d58cff' : gate.lane === RIGHT ? '#ffd447' : '#4fc3ff';
   panel.material.color.set(col); panel.material.emissive.set(col); panel.material.opacity = gate.used ? 0.3 : 0.92;
   label.visible = !gate.used;
@@ -34,9 +34,9 @@ function drawGate(slot, gate){
     // the road surface over the gap is its own strip so it can be hidden
     const surf = roadSurfaces[lane]; scene.remove(surf);
     const near = roadStrip(x, CFG.road.near, z0, CFG.laneW + 0.02), far = roadStrip(x, z1, CFG.road.far, CFG.laneW + 0.02), mid = roadStrip(x, z0, z1, CFG.laneW + 0.02);
-    const pit = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW + 0.02, 3, len), new THREE.MeshLambertMaterial({ color: 0x1a1d24 })); pit.position.set(x, -1.9, (z0 + z1)/2); scene.add(pit);
-    const boards = Array.from({length: 10}, (_, i) => { const b = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW - 0.2, 0.14, 1), new THREE.MeshLambertMaterial({ color: i%2 ? 0xb8874f : 0xc8955a })); b.castShadow = true; b.receiveShadow = true; b.visible = false; scene.add(b); return b; });
-    const ghost = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW - 0.2, 0.12, 1), new THREE.MeshLambertMaterial({ color: 0xc8955a, transparent: true, opacity: 0.3 })); ghost.visible = false; scene.add(ghost);
+    const pit = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW + 0.02, 3, len), new THREE.MeshStandardMaterial({ color: 0x1a1d24, roughness: 1 })); pit.position.set(x, -1.9, (z0 + z1)/2); scene.add(pit);
+    const boards = Array.from({length: 10}, (_, i) => { const b = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW - 0.2, 0.14, 1), new THREE.MeshStandardMaterial({ color: i%2 ? 0xb8874f : 0xc8955a, roughness: 0.85, envMapIntensity: 0.3 })); b.castShadow = true; b.receiveShadow = true; b.visible = false; scene.add(b); return b; });
+    const ghost = new THREE.Mesh(new THREE.BoxGeometry(CFG.laneW - 0.2, 0.12, 1), new THREE.MeshStandardMaterial({ color: 0xc8955a, transparent: true, opacity: 0.3 })); ghost.visible = false; scene.add(ghost);
     PROPS.gaps[lane] = { mid, boards, ghost };
   }
 })();
@@ -44,22 +44,22 @@ function drawGap(gap){
   const P = PROPS.gaps[gap.lane], seg = (GAP.near - GAP.far)/gap.boards, x = laneX(gap.lane);
   P.mid.visible = !gap.open;
   const n = gap.open ? gap.built : gap.boards;
-  P.boards.forEach((b, i) => { b.visible = i < n; if (b.visible){ b.scale.z = seg*0.9; b.position.set(x, 0.07, GAP.near - (i + 0.5)*seg); } });
+  P.boards.forEach((b, i) => { b.visible = i < n; if (b.visible){ b.scale.z = seg*0.9; b.position.set(x, 0.12, GAP.near - (i + 0.5)*seg); } });
   P.ghost.visible = gap.open && gap.built < gap.boards;
-  if (P.ghost.visible){ P.ghost.scale.z = seg*0.9; P.ghost.position.set(x, 0.07, GAP.near - (gap.built + 0.5)*seg); P.ghost.material.opacity = 0.15 + 0.6*(gap.hits/gap.hitsPer); }
+  if (P.ghost.visible){ P.ghost.scale.z = seg*0.9; P.ghost.position.set(x, 0.12, GAP.near - (gap.built + 0.5)*seg); P.ghost.material.opacity = 0.15 + 0.6*(gap.hits/gap.hitsPer); }
   if (gap.open) FX.texts.push({ x, z: GAP.far - 0.6, y: 0.5, str: gap.built + '/' + gap.boards + (gap.lane === RIGHT ? '  MECH' : ''), color: '#fff', size: 0.5, life: 0.01 });
 }
 
 // ---------- rocks: lumpy icosahedra; ice is translucent ----------
 (function rocks(){
   const mk = () => { const geo = new THREE.IcosahedronGeometry(0.95, 1); const pos = geo.attributes.position; for (let i=0;i<pos.count;i++){ const s = 0.82 + Math.random()*0.36; pos.setXYZ(i, pos.getX(i)*s, pos.getY(i)*s*0.85, pos.getZ(i)*s); } geo.computeVertexNormals(); geo.translate(0, 0.8, 0); return geo; };
-  PROPS.rocks = Array.from({length: 4}, () => { const m = new THREE.Mesh(mk(), new THREE.MeshLambertMaterial({ color: 0x6e6759, emissive: 0xff7a1a, emissiveIntensity: 0, flatShading: true })); m.castShadow = true; m.visible = false; scene.add(m); return m; });
+  PROPS.rocks = Array.from({length: 4}, () => { const m = new THREE.Mesh(mk(), new THREE.MeshStandardMaterial({ color: 0x6e6759, emissive: 0xff7a1a, emissiveIntensity: 0, flatShading: true, roughness: 0.9 })); m.castShadow = true; m.visible = false; scene.add(m); return m; });
 })();
 function drawRock(m, it){
-  m.position.set(laneX(it.lane), it.fall ? -it.fall*4 : 0, it.z); m.visible = true; m.rotation.y = it.z*0.4;
+  m.position.set(laneX(it.lane), 0.05 + (it.fall ? -it.fall*4 : 0), it.z); m.visible = true; m.rotation.y = it.z*0.4;
   const dmg = 1 - it.hp/it.maxHp, ice = G.D.world >= 4;
   m.material.color.set(it.flash > 0 ? 0xffffff : ice ? 0x9fd8ff : 0x6e6759); m.material.transparent = ice; m.material.opacity = ice ? 0.8 : 1;
-  m.material.emissive.set(it.reward.color); m.material.emissiveIntensity = 0.15 + dmg*0.8;
+  m.material.emissive.set(it.reward.color); m.material.emissiveIntensity = 0.2 + dmg*1.6;
   FX.texts.push({ x: m.position.x, z: it.z, y: 2.0, str: String(it.hp), color: '#fff', size: 0.85, life: 0.01 });
   const tag = it.reward.kind === 'troops' ? '+' + it.reward.amount : it.reward.kind === 'weapon' ? WEAPONS[it.reward.gun].name.toUpperCase() : it.reward.kind.toUpperCase();
   FX.texts.push({ x: m.position.x, z: it.z + 0.6, y: 0.4, str: tag, color: it.reward.color, size: 0.42, life: 0.01 });
@@ -70,14 +70,14 @@ function drawRock(m, it){
 (function crates(){
   const geo = new THREE.BoxGeometry(0.9, 0.7, 0.9); geo.translate(0, 0.35, 0);
   const edge = new THREE.EdgesGeometry(geo);
-  PROPS.crates = Array.from({length: 6}, () => { const g = new THREE.Group(); const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: 0x8a6a3c })); m.castShadow = true; g.add(m);
+  PROPS.crates = Array.from({length: 6}, () => { const g = new THREE.Group(); const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x8a6a3c, roughness: 0.8 })); m.castShadow = true; g.add(m);
     g.add(new THREE.LineSegments(edge, new THREE.LineBasicMaterial({ color: 0x3a2a15 })));
     const icon = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true })); icon.position.set(0, 1.4, 0); icon.scale.set(1.2, 0.7, 1); g.add(icon);
     g.visible = false; scene.add(g); return { g, m, icon }; });
   PROPS.iconTex = {}; for (let i=0;i<6;i++) PROPS.iconTex[i] = loadTex('assets/w' + i + '.png');
 })();
 function drawCrate(slot, it){
-  slot.g.position.set(laneX(it.lane), it.fall ? -it.fall*4 : 0, it.z); slot.g.visible = true; slot.g.rotation.y = Math.sin(it.z*0.7)*0.15;
+  slot.g.position.set(laneX(it.lane), 0.05 + (it.fall ? -it.fall*4 : 0), it.z); slot.g.visible = true; slot.g.rotation.y = Math.sin(it.z*0.7)*0.15;
   slot.m.material.color.set(it.mech ? 0x3f6b2a : 0x8a6a3c);
   if (it.mech){ slot.icon.visible = false; FX.texts.push({ x: slot.g.position.x, z: it.z, y: 1.5, str: 'MECH SUIT', color: '#b6ff7d', size: 0.5, life: 0.01 }); }
   else { slot.icon.visible = true; slot.icon.material.map = PROPS.iconTex[it.gun]; slot.icon.material.needsUpdate = true; FX.texts.push({ x: slot.g.position.x, z: it.z + 0.7, y: 0.25, str: WEAPONS[it.gun].name.toUpperCase(), color: '#ffd447', size: 0.4, life: 0.01 }); }
@@ -89,10 +89,10 @@ PROPS.shield.rotation.x = -Math.PI/2; PROPS.shield.visible = false; scene.add(PR
 
 // ---------- boss attack telegraphs ----------
 (function telegraphs(){
-  PROPS.laneWarn = [0,1,2].map(l => { const m = new THREE.Mesh(new THREE.PlaneGeometry(CFG.laneW, 30), new THREE.MeshBasicMaterial({ color: 0xff3c3c, transparent: true, opacity: 0.4, depthWrite: false })); m.rotation.x = -Math.PI/2; m.position.set(laneX(l), 0.03, -12); m.visible = false; scene.add(m); return m; });
+  PROPS.laneWarn = [0,1,2].map(l => { const m = new THREE.Mesh(new THREE.PlaneGeometry(CFG.laneW, 30), new THREE.MeshBasicMaterial({ color: 0xff3c3c, transparent: true, opacity: 0.4, depthWrite: false })); m.rotation.x = -Math.PI/2; m.position.set(laneX(l), 0.08, -12); m.visible = false; scene.add(m); return m; });
   PROPS.beam = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 30), new THREE.MeshBasicMaterial({ color: 0xff5a3c, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); PROPS.beam.visible = false; scene.add(PROPS.beam);
   PROPS.rings = Array.from({length: 6}, () => { const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 40), new THREE.MeshBasicMaterial({ color: 0xffc850, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI/2; m.visible = false; scene.add(m); return m; });
-  PROPS.fallRock = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 1), new THREE.MeshLambertMaterial({ color: 0x7a705f, flatShading: true })); PROPS.fallRock.castShadow = true; PROPS.fallRock.visible = false; scene.add(PROPS.fallRock);
+  PROPS.fallRock = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 1), new THREE.MeshStandardMaterial({ color: 0x7a705f, flatShading: true, roughness: 0.95 })); PROPS.fallRock.castShadow = true; PROPS.fallRock.visible = false; scene.add(PROPS.fallRock);
   PROPS.bossLight = new THREE.PointLight(0xff4444, 0, 16, 2); scene.add(PROPS.bossLight);
 })();
 function drawTelegraphs(){
@@ -101,7 +101,7 @@ function drawTelegraphs(){
   let ri = 0;
   for (const tg of G.telegraphs){
     if (tg.kind === 'lane'){ const m = PROPS.laneWarn[tg.lane]; m.visible = true; m.material.opacity = tg.t > 0 ? 0.22 + 0.15*Math.sin(t*30) : 0.6; if (b){ m.position.z = (b.z + CFG.road.near)/2; m.scale.y = (CFG.road.near - b.z)/30; } }
-    if (tg.kind === 'rock'){ const r = PROPS.rings[ri++]; if (r){ r.visible = true; r.position.set(tg.x, 0.04, CFG.squadZ); r.scale.set(tg.r, tg.r, 1); r.material.color.set(tg.t > 0 ? 0xffc850 : 0xffffff); r.material.opacity = 0.9; }
+    if (tg.kind === 'rock'){ const r = PROPS.rings[ri++]; if (r){ r.visible = true; r.position.set(tg.x, 0.09, CFG.squadZ); r.scale.set(tg.r, tg.r, 1); r.material.color.set(tg.t > 0 ? 0xffc850 : 0xffffff); r.material.opacity = 0.9; }
       if (tg.t > 0){ PROPS.fallRock.visible = true; PROPS.fallRock.position.set(tg.x, Math.max(0.3, tg.t*7), CFG.squadZ); } }
     if (tg.kind === 'beam' && b){ PROPS.beam.visible = true; PROPS.beam.position.set(tg.x, 0.15, (b.z + CFG.road.near)/2); PROPS.beam.scale.set(tg.t <= 0 ? 1 : 0.35, 1, (CFG.road.near - b.z)/30); PROPS.beam.material.opacity = tg.t <= 0 ? 0.85 : 0.3; }
   }
@@ -110,7 +110,7 @@ function drawTelegraphs(){
 }
 function drawBoss(dt){
   const b = G.boss; poolBegin(pools.boss);
-  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0, b.z); it.obj.scale.setScalar(b.scale); it.obj.rotation.set(0, 0, 0);
+  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0.05, b.z); it.obj.scale.setScalar(b.scale); it.obj.rotation.set(0, 0, 0);
     it.obj.traverse(o => { if (o.isMesh && o.material.color) o.material.color.lerp(new THREE.Color(b.def.color), 0.15); });
     flash(it, b.flash > 0);
     if (b.phase === 'dying') play(it, 'Death', { once: true });
@@ -131,5 +131,5 @@ function drawProps(){
   PROPS.rocks.forEach(m => m.visible = false); PROPS.crates.forEach(c => c.g.visible = false);
   for (const it of G.items){ if (it.type === 'rock' && !it.cracked && ri < PROPS.rocks.length) drawRock(PROPS.rocks[ri++], it); else if (it.type === 'crate' && ci < PROPS.crates.length) drawCrate(PROPS.crates[ci++], it); }
   const S = G.squad; PROPS.shield.visible = G.shield > 0;
-  if (PROPS.shield.visible){ const r = S.radius + 0.5; PROPS.shield.position.set(S.x, 0.06, CFG.squadZ); PROPS.shield.scale.set(r, r, 1); PROPS.shield.material.opacity = 0.35 + 0.25*Math.sin(performance.now()/120); }
+  if (PROPS.shield.visible){ const r = S.radius + 0.5; PROPS.shield.position.set(S.x, 0.1, CFG.squadZ); PROPS.shield.scale.set(r, r, 1); PROPS.shield.material.opacity = 0.35 + 0.25*Math.sin(performance.now()/120); }
 }

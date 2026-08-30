@@ -19,6 +19,8 @@ function decalTex(kind){
 }
 const decalMesh = {};
 for (const k of ['blood','scorch','crack']) decalMesh[k] = instanced(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ map: decalTex(k), transparent: true, depthWrite: false }), 40);
+const blobMesh = instanced(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ map: radialTex('rgba(0,0,0,.55)', 'rgba(0,0,0,0)', 64), transparent: true, depthWrite: false }), 200);
+function blobsDraw(list){ blobMesh.count = 0; for (const b of list){ if (blobMesh.count >= 200) break; _d.position.set(b.x, 0.06, b.z); _d.rotation.set(-Math.PI/2, 0, 0); _d.scale.set(b.r*2, b.r*1.6, 1); _d.updateMatrix(); blobMesh.setMatrixAt(blobMesh.count++, _d.matrix); } blobMesh.instanceMatrix.needsUpdate = true; }
 const glowPool = Array.from({length: 12}, () => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ map: softTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); m.rotation.x = -Math.PI/2; m.visible = false; scene.add(m); return m; });
 const muzzleLight = new THREE.PointLight(0xffd447, 0, 9, 2); scene.add(muzzleLight);
 const fxLights = Array.from({length: 3}, () => { const l = new THREE.PointLight(0xffffff, 0, 10, 2); scene.add(l); return l; });
@@ -76,12 +78,12 @@ function fxDraw(bullets){
   smokeMesh.instanceMatrix.needsUpdate = true; if (smokeMesh.instanceColor) smokeMesh.instanceColor.needsUpdate = true;
   // decals
   for (const k in decalMesh) decalMesh[k].count = 0;
-  for (const d of FX.decals){ const im = decalMesh[d.kind]; if (im.count >= 40) continue; _d.position.set(d.x, 0.02, d.z); _d.rotation.set(-Math.PI/2, 0, d.rot); _d.scale.set(d.r*2, d.r*1.6, 1); _d.updateMatrix(); im.setMatrixAt(im.count++, _d.matrix); }
+  for (const d of FX.decals){ const im = decalMesh[d.kind]; if (im.count >= 40) continue; _d.position.set(d.x, 0.07, d.z); _d.rotation.set(-Math.PI/2, 0, d.rot); _d.scale.set(d.r*2, d.r*1.6, 1); _d.updateMatrix(); im.setMatrixAt(im.count++, _d.matrix); }
   for (const k in decalMesh) decalMesh[k].instanceMatrix.needsUpdate = true;
   // glows + point lights
   glowPool.forEach(g => g.visible = false); let gi = 0, li = 0;
   fxLights.forEach(l => l.intensity = 0);
-  for (const g of FX.glows){ if (gi < glowPool.length){ const m = glowPool[gi++]; m.position.set(g.x, 0.03, g.z); m.scale.set(g.r*2, g.r*1.3, 1); m.material.color.set(g.color); m.material.opacity = 0.55*(g.life/g.max); m.visible = true; }
+  for (const g of FX.glows){ if (gi < glowPool.length){ const m = glowPool[gi++]; m.position.set(g.x, 0.08, g.z); m.scale.set(g.r*2, g.r*1.3, 1); m.material.color.set(g.color); m.material.opacity = 0.55*(g.life/g.max); m.visible = true; }
     if (g.light && li < fxLights.length){ const l = fxLights[li++]; l.position.set(g.x, 1.2, g.z); l.color.set(g.color); l.intensity = 3*(g.life/g.max); } }
   // text
   textPool.forEach(t => t.visible = false);
