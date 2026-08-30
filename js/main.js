@@ -18,15 +18,17 @@ function drawCharacters(dt){
   for (const e of G.enemies){ const pk = pools[e.kind], it = poolTake(pk); if (!it) continue; const def = ENEMY[e.kind];
     it.obj.position.set(e.x, 0.05, e.z); it.obj.rotation.set(0, Math.sin(t*2 + e.seed*6)*0.06, 0); it.obj.scale.setScalar(def.scale); blobs.push({ x: e.x, z: e.z, r: def.radius });
     const near = e.z > CFG.squadZ - 2.5 && laneOfX(S.x) === MID;
-    play(it, near && it.actions.ZAttack ? 'ZAttack' : def.anim, { speed: (e.kind === 'runner' ? 1.4 : e.kind === 'brute' ? 0.9 : 1.2) * G.D.speedMult }); }
+    const atk = it.actions.WAttack ? 'WAttack' : 'ZAttack';
+    play(it, near && it.actions[atk] ? atk : (it.actions[def.anim] ? def.anim : 'ZWalk'), { speed: (e.kind === 'runner' ? 1.4 : e.kind === 'brute' ? 0.9 : 1.2) * G.D.speedMult }); }
   for (const k of ['grunt','runner','brute']) poolEnd(pools[k], dt);
   // corpses: each keeps its own pool slot so its death animation plays through without restarting
-  const cp = pools.corpse, live = new Set(G.corpses);
-  for (const it of cp.items){ if (it.owner && !live.has(it.owner)){ it.owner = null; } }
+  const live = new Set(G.corpses);
+  for (const cp of [pools.corpse, pools.bruteCorpse]){ for (const it of cp.items){ if (it.owner && !live.has(it.owner)) it.owner = null; } }
   for (const c of G.corpses){ if (c.item && c.item.owner === c) continue;
-    const free = cp.items.find(it => !it.owner); if (!free) break; free.owner = c; c.item = free; poolReset(free);
-    free.obj.position.set(c.x0, 0.05, c.z0); free.obj.rotation.set(0, 0, 0); free.obj.scale.setScalar(ENEMY[c.kind].scale); play(free, free.actions.ZDeath ? 'ZDeath' : 'sad_pose', { once: !!free.actions.ZDeath, speed: 1.7 }); }
-  for (const it of cp.items){ it.obj.visible = !!it.owner; if (it.owner) it.mixer.update(dt); }
+    const cp = c.kind === 'brute' ? pools.bruteCorpse : pools.corpse, free = cp.items.find(it => !it.owner); if (!free) continue; free.owner = c; c.item = free; poolReset(free);
+    free.obj.position.set(c.x0, 0.05, c.z0); free.obj.rotation.set(0, 0, 0); free.obj.scale.setScalar(ENEMY[c.kind].scale);
+    const death = free.actions.WDeath ? 'WDeath' : free.actions.ZDeath ? 'ZDeath' : 'sad_pose'; play(free, death, { once: death !== 'sad_pose', speed: 1.7 }); }
+  for (const cp of [pools.corpse, pools.bruteCorpse]) for (const it of cp.items){ it.obj.visible = !!it.owner; if (it.owner) it.mixer.update(dt); }
   // mech walker behind the squad
   poolBegin(pools.mech);
   if (G.mech > 0){ const it = poolTake(pools.mech); it.obj.position.set(S.x, 0.05, CFG.squadZ + 1.6); it.obj.rotation.set(0, Math.PI, 0); it.obj.scale.setScalar(0.7); play(it, moving ? 'Walking' : 'Idle', { speed: 1.2 });
