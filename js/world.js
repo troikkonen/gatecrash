@@ -55,7 +55,7 @@ function toPBR(o, opts={}){
 // ---------- textures ----------
 const texLoader = new THREE.TextureLoader();
 function loadTex(url, opts={}){ const t = texLoader.load(url); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; if (opts.repeat){ t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...opts.repeat); } return t; }
-const roadTex = loadTex('assets/road.jpg', { repeat: [1, 12] }); roadTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const roadTex = loadTex('assets/road.jpg', { repeat: [1, 8] }); roadTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 const forestTex = loadTex('assets/forest.jpg', { repeat: [4, 4] }); forestTex.wrapS = forestTex.wrapT = THREE.MirroredRepeatWrapping;
 
 // ---------- ground + road ----------
