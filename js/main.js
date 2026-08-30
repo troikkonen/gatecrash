@@ -29,14 +29,8 @@ function drawCharacters(dt){
     free.obj.position.set(c.x0, 0.05, c.z0); free.obj.rotation.set(0, 0, 0); free.obj.scale.setScalar(ENEMY[c.kind].scale);
     const death = free.actions.WDeath ? 'WDeath' : free.actions.ZDeath ? 'ZDeath' : 'sad_pose'; play(free, death, { once: death !== 'sad_pose', speed: 1.7 }); }
   for (const cp of [pools.corpse, pools.bruteCorpse]) for (const it of cp.items){ it.obj.visible = !!it.owner; if (it.owner) it.mixer.update(dt); }
-  // mech walker behind the squad
-  poolBegin(pools.mech);
-  if (G.mech > 0){ const it = poolTake(pools.mech); it.obj.position.set(S.x, 0.05, CFG.squadZ - S.radius - 1.3); it.obj.rotation.set(0, Math.PI, 0); it.obj.scale.setScalar(pools.mech.exo ? 1.05 : 0.32);
-    if (pools.mech.exo) play(it, moving ? 'RifleRun' : 'RifleFire', { speed: moving ? 1.0 : 1.3 }); else play(it, moving ? 'Walking' : 'Idle', { speed: 1.2 });
-    FX.texts.push({ x: S.x, z: CFG.squadZ - S.radius - 0.6, y: 0.2, str: '▮'.repeat(Math.max(1, Math.round(12*Math.min(1, G.mech/30)))), color: '#b6ff7d', size: 0.22, life: 0.01 }); }
-  poolEnd(pools.mech, dt);
+
   if (G.boss) blobs.push({ x: G.boss.x, z: G.boss.z, r: 1.4*G.boss.scale });
-  if (G.mech > 0) blobs.push({ x: S.x, z: CFG.squadZ - S.radius - 1.3, r: 0.7 });
   blobsDraw(blobs);
   // block counters
   const fronts = {};

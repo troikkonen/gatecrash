@@ -20,7 +20,7 @@ const PROPS = {};
 function drawGate(slot, gate){
   const { g, panel, label } = slot;
   g.position.set(laneX(gate.lane), 0.05 + (gate.fall ? -gate.fall*4 : 0), gate.z); g.visible = true;
-  const col = gate.flash > 0 ? '#ffffff' : gate.type === 'mul' ? '#d58cff' : gate.lane === RIGHT ? '#ffd447' : '#4fc3ff';
+  const col = gate.flash > 0 ? '#ffffff' : gate.type === 'mul' ? '#d58cff' : '#4fc3ff';   // blue = plus, purple = multiply
   panel.material.color.set(col); panel.material.emissive.set(col); panel.material.opacity = gate.used ? 0.3 : 0.92;
   label.visible = !gate.used;
   if (label.visible){ const tx = textTex(gateLabel(gate), '#ffffff', 72); label.material.map = tx; label.material.needsUpdate = true; label.scale.set(0.9*tx.image.width/tx.image.height, 0.9, 1); }
@@ -47,7 +47,7 @@ function drawGap(gap){
   P.boards.forEach((b, i) => { b.visible = i < n; if (b.visible){ b.scale.z = seg*0.9; b.position.set(x, 0.12, GAP.near - (i + 0.5)*seg); } });
   P.ghost.visible = gap.open && gap.built < gap.boards;
   if (P.ghost.visible){ P.ghost.scale.z = seg*0.9; P.ghost.position.set(x, 0.12, GAP.near - (gap.built + 0.5)*seg); P.ghost.material.opacity = 0.15 + 0.6*(gap.hits/gap.hitsPer); }
-  if (gap.open) FX.texts.push({ x, z: GAP.far - 0.6, y: 0.5, str: gap.built + '/' + gap.boards + (gap.lane === RIGHT ? '  MECH' : ''), color: '#fff', size: 0.5, life: 0.01 });
+  if (gap.open) FX.texts.push({ x, z: GAP.far - 0.6, y: 0.5, str: gap.built + '/' + gap.boards + (gap.lane === RIGHT ? '  BRIDGE FOR +99s' : ''), color: '#fff', size: 0.5, life: 0.01 });
 }
 
 // ---------- rocks: a stone (or ice) shell around a glowing core, wrapped in a force-field cage that shows through as you crack it ----------
@@ -87,9 +87,8 @@ function drawRock(slot, it){
 })();
 function drawCrate(slot, it){
   slot.g.position.set(laneX(it.lane), 0.05 + (it.fall ? -it.fall*4 : 0), it.z); slot.g.visible = true; slot.g.rotation.y = Math.sin(it.z*0.7)*0.15;
-  slot.m.material.color.set(it.mech ? 0x3f6b2a : 0x8a6a3c);
-  if (it.mech){ slot.icon.visible = false; FX.texts.push({ x: slot.g.position.x, z: it.z, y: 1.5, str: 'MECH SUIT', color: '#b6ff7d', size: 0.5, life: 0.01 }); }
-  else { slot.icon.visible = true; slot.icon.material.map = PROPS.iconTex[it.gun]; slot.icon.material.needsUpdate = true; FX.texts.push({ x: slot.g.position.x, z: it.z + 0.7, y: 0.25, str: WEAPONS[it.gun].name.toUpperCase(), color: '#ffd447', size: 0.4, life: 0.01 }); }
+  slot.m.material.color.set(it.big ? 0x6a4a1c : 0x8a6a3c); slot.g.scale.setScalar(it.big ? 1.4 : 1);
+  { slot.icon.visible = true; slot.icon.material.map = PROPS.iconTex[it.gun]; slot.icon.material.needsUpdate = true; FX.texts.push({ x: slot.g.position.x, z: it.z + 0.7, y: 0.25, str: WEAPONS[it.gun].name.toUpperCase(), color: '#ffd447', size: 0.4, life: 0.01 }); }
 }
 
 // ---------- shield ring ----------

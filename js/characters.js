@@ -1,7 +1,7 @@
 // ============================================================
 // Characters — rigged models (Mixamo Soldier / Xbot, RobotExpressive), cloned into animated pools
 // ============================================================
-const MODELS = { soldier: 'models/vanguard.glb', zombie: 'models/zombie.glb', warrok: 'models/warrok.glb', mutant: 'models/mutant.glb', exo: 'models/exo.glb', robot: 'models/RobotExpressive.glb' };   // add zombie: 'models/zombie.glb' when a Mixamo zombie character lands
+const MODELS = { soldier: 'models/vanguard.glb', zombie: 'models/zombie.glb', warrok: 'models/warrok.glb', mutant: 'models/mutant.glb', robot: 'models/RobotExpressive.glb' };   // add zombie: 'models/zombie.glb' when a Mixamo zombie character lands
 // Mixamo animation clips (downloaded "without skin" for the same rig) — retargeted by bone name, rotation tracks only
 const CLIPS = { RifleRun: 'models/anims/rifle_run.glb', RifleIdle: 'models/anims/rifle_idle.glb', RifleFire: 'models/anims/rifle_fire.glb', Hit: 'models/anims/hit.glb',
   ZRun: 'models/anims/zombie_run.glb', ZWalk: 'models/anims/zombie_walk.glb', ZAttack: 'models/anims/zombie_attack.glb', ZDeath: 'models/anims/zombie_death.glb', ZCrawl: 'models/anims/running_crawl.glb',
@@ -57,8 +57,6 @@ const charactersLoaded = Promise.all([...Object.keys(MODELS).map(loadModel), ...
   pools.bruteCorpse = makePool(gltfs.warrok ? 'warrok' : zk, 4, { scale: 0.95, color: ENEMY.brute.color, extra: gltfs.warrok ? ['WDeath'] : Z });
   pools.boss    = makePool(gltfs.mutant ? 'mutant' : 'robot', 1, { scale: 1, extra: gltfs.mutant ? ['MWalk','MPunch','MDeath','MIdle','MRoar'] : [] });
   pools.boss.mutant = !!gltfs.mutant;
-  pools.mech    = gltfs.exo ? makePool('exo', 1, { scale: 1.05, extra: ['RifleRun','RifleIdle','RifleFire'] }) : makePool('robot', 1, { scale: 0.32, color: '#3b5a2f', metal: true });
-  pools.mech.exo = !!gltfs.exo;
   charactersReady = !!(pools.soldier && pools.grunt && pools.boss);
   return charactersReady;
 });

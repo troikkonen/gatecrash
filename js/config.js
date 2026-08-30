@@ -66,7 +66,7 @@ function difficulty(L){
     leftBoards:  5,  leftHits:  Math.round(5 * Math.pow(1.06, L-1)),
     rightBoards: 8,  rightHits: Math.round(9 * Math.pow(1.07, L-1)),
     weaponGap:   8, rockGap: 15,
-    rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
+    rockHp:      Math.round(12 * Math.pow(1.06, L-1)),    // crackable with the starting gun in the time it rolls past
     bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.5, world-1)) : Math.round(200 * Math.pow(1.10, L-1)),
     bossAdvance: 10,                                       // seconds for the boss to walk down to your line, then it fights there
     telegraph:   Math.max(0.6, 1.05 - world*0.06),        // warning time before an attack lands

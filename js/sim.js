@@ -66,14 +66,14 @@ function gapHit(g, dmg){
   g.hits += dmg;
   while (g.hits >= g.hitsPer && g.built < g.boards){ g.hits -= g.hitsPer; g.built++; SFX.board(); burst(laneX(g.lane), GAP.near - (g.built - 0.5)*(GAP.near - GAP.far)/g.boards, '#c8955a', 5, 0.3); }
   if (g.built >= g.boards){ g.open = false; g.hits = 0; SFX.bridge(); floatText(laneX(g.lane), (GAP.near + GAP.far)/2, 'BRIDGE UP', '#c8955a', 0.7);
-    if (g.lane === RIGHT){ G.rightOpen = G.D.jackpotWindow; G.timers.jackpot = G.D.jackpotGap; G.items.push({ type: 'crate', lane: RIGHT, z: CFG.spawnZ, mech: true }); } }
+    if (g.lane === RIGHT){ G.rightOpen = G.D.jackpotWindow; G.items.push({ type: 'crate', lane: RIGHT, z: CFG.spawnZ, gun: WEAPONS.length-1, big: true }); } }   // first thing across: the top gun
 }
 function inGap(lane, z){ const g = G.gaps.find(x => x.lane === lane); return g && g.open && z > GAP.far && z < GAP.near; }
 // anything riding an open outer lane drops into the pit
 function swallow(obj){ if (obj.lane !== MID && !obj.fall && inGap(obj.lane, obj.z)) obj.fall = 0.01; if (obj.fall){ obj.fall += 0.04; if (obj.fall > 1) obj.dead = true; return true; } return false; }
 
 // ---------- items: weapon crates (middle) and rocks (bridged outer lanes) ----------
-const ROCK_REWARDS = [ { kind:'troops', color:'#4fc3ff' }, { kind:'weapon', color:'#ffd447' }, { kind:'mech', color:'#b6ff7d' }, { kind:'shield', color:'#7dffea' } ];
+const ROCK_REWARDS = [ { kind:'troops', color:'#4fc3ff' }, { kind:'troops', color:'#4fc3ff' }, { kind:'weapon', color:'#ffd447' }, { kind:'shield', color:'#7dffea' } ];
 function spawnCrate(){ const next = Math.min(WEAPONS.length-1, G.weapon + 1); if (next !== G.weapon) G.items.push({ type: 'crate', lane: MID, z: CFG.spawnZ, gun: next }); }
 function spawnRock(){
   const open = G.gaps.filter(g => !g.open).map(g => g.lane); if (!open.length){ G.timers.rock = 3; return; }
@@ -85,14 +85,12 @@ function spawnRock(){
 function crackOpen(it){
   it.cracked = true; const S = G.squad, x = laneX(it.lane), rw = it.reward;
   burst(x, it.z, '#a89f8c', 24, 0.8); explode(x, it.z, 1.2, rw.color); SFX.crack(); kick(8);
-  if (rw.kind === 'troops'){ S.n = Math.min(CFG.maxSquad, S.n + rw.amount); floatText(x, it.z, '+' + rw.amount, rw.color, 1.1); }
-  if (rw.kind === 'weapon'){ setWeapon(rw.gun); floatText(x, it.z, WEAPONS[rw.gun].name.toUpperCase(), rw.color, 1); }
-  if (rw.kind === 'mech'){ G.mech = 25; floatText(x, it.z, 'MECH ONLINE', rw.color, 0.9); }
-  if (rw.kind === 'shield'){ G.shield = 20; floatText(x, it.z, 'SHIELD UP', rw.color, 0.9); }
+  if (rw.kind === 'troops'){ S.n = Math.min(CFG.maxSquad, S.n + rw.amount); floatText(x, it.z, '+' + rw.amount + ' TROOPS', rw.color, 1.2, 2); }
+  if (rw.kind === 'weapon'){ setWeapon(rw.gun); floatText(x, it.z, WEAPONS[rw.gun].name.toUpperCase() + '!', rw.color, 1.1, 2); }
+  if (rw.kind === 'shield'){ G.shield = 20; floatText(x, it.z, 'SHIELD 20s', rw.color, 1.1, 2); }
 }
 function collectCrate(it){
   it.dead = true; SFX.pickup(); const S = G.squad;
-  if (it.mech){ G.mech = 30; floatText(S.x, CFG.squadZ - 1.5, 'MECH SUIT', '#b6ff7d', 1); burst(S.x, CFG.squadZ - 1, '#b6ff7d', 16, 0.6); return; }
   setWeapon(it.gun); floatText(S.x, CFG.squadZ - 1.5, WEAPONS[it.gun].name.toUpperCase(), '#ffd447', 0.9); burst(S.x, CFG.squadZ - 1, '#ffd447', 14, 0.6);
 }
 
@@ -202,9 +200,6 @@ function update(dt){
       G.bullets.push({ x: S.x + f*S.radius*1.6, z: CFG.squadZ - 0.6, vx: f*w.spread*CFG.bulletSpeed*2 + rand(-0.9, 0.9), dmg: w.dmg, pierce: w.pierce, splash: w.splash, color: w.color, hit: new Set() }); }
     SFX.shoot(G.weapon); G.recoil = 1; muzzle(S.x, CFG.squadZ - 0.8, w.color, 1.4 + w.dmg*0.12);
   }
-  if (G.mech > 0){ G.mech -= dt; G.timers.mech -= dt; if (G.timers.mech <= 0){ G.timers.mech = 0.4;
-    for (const off of [-0.4, 0.4]) G.bullets.push({ x: S.x + off, z: CFG.squadZ - S.radius - 2.0, vx: 0, dmg: 8, pierce: false, splash: 1.8, color: '#b6ff7d', hit: new Set() });
-    muzzle(S.x, CFG.squadZ - S.radius - 2.0, '#b6ff7d', 1.2); } }
   if (G.shield > 0) G.shield -= dt; if (G.rightOpen > 0) G.rightOpen -= dt;
   for (const b of G.bullets){ b.z -= CFG.bulletSpeed*dt; b.x += b.vx*dt; }
   G.bullets = G.bullets.filter(b => b.z > CFG.squadZ - CFG.bulletRange && !b.dead);
@@ -216,7 +211,7 @@ function update(dt){
   if (T.mul <= 0){ T.mul = D.mulGap; addGate(MID, 'mul', Math.random() < 0.8 ? 2 : 4); }
   if (T.weapon <= 0){ T.weapon = D.weaponGap; spawnCrate(); }
   if (T.rock <= 0){ T.rock = D.rockGap; spawnRock(); }
-  if (G.rightOpen > 0){ T.jackpot -= dt; if (T.jackpot <= 0){ T.jackpot = D.jackpotGap; Math.random() < 0.25 ? addGate(RIGHT, 'mul', 4) : addGate(RIGHT, 'add', 99); } }
+  T.jackpot -= dt; if (T.jackpot <= 0){ T.jackpot = D.jackpotGap; Math.random() < 0.25 ? addGate(RIGHT, 'mul', 4) : addGate(RIGHT, 'add', 99); }   // always streaming — it just drops into the pit until the bridge is up
   // the right bridge falls again once its payoff is over
   const rg = G.gaps[1]; if (!rg.open && G.rightOpen <= 0){ rg.collapse += dt; if (rg.collapse > 3){ rg.open = true; rg.built = 0; rg.collapse = 0; floatText(laneX(RIGHT), (GAP.near + GAP.far)/2, 'BRIDGE OUT', '#ff8a8a', 0.7); burst(laneX(RIGHT), (GAP.near + GAP.far)/2, '#c8955a', 16, 0.3); } }
 
@@ -243,7 +238,7 @@ function update(dt){
 
   // items
   for (const it of G.items){
-    it.z += conv*dt*(it.type === 'rock' ? 0.62 : 1); if (it.flash > 0) it.flash -= dt;
+    it.z += conv*dt*(it.type === 'rock' ? 0.5 : 1); if (it.flash > 0) it.flash -= dt;
     if (swallow(it)) continue;
     if (it.type === 'rock' && !it.cracked){
       for (const b of G.bullets){ if (b.dead || laneOfX(b.x) !== it.lane || Math.abs(b.z - it.z) > 0.9) continue; b.dead = true; it.hp -= b.dmg; it.flash = 0.05; SFX.chip(); sparks(b.x, b.z, 2, 0.8); if (it.hp <= 0){ crackOpen(it); break; } }
@@ -275,7 +270,7 @@ function update(dt){
   }
   // contact
   for (const e of G.enemies){ if (e.dead) continue;
-    if (e.z > CFG.squadZ - 0.8 && laneOfX(S.x) === MID && Math.abs(e.x - S.x) < S.radius + ENEMY[e.kind].radius){ e.dead = true; if (G.mech > 0){ killEnemy(e); kick(2); } else loseTroops(ENEMY[e.kind].hit, e.x, e.z); }
+    if (e.z > CFG.squadZ - 0.8 && laneOfX(S.x) === MID && Math.abs(e.x - S.x) < S.radius + ENEMY[e.kind].radius){ e.dead = true; loseTroops(ENEMY[e.kind].hit, e.x, e.z); }
     if (e.z > CFG.road.near) e.dead = true; }
   G.enemies = G.enemies.filter(e => !e.dead);
   for (const c of G.corpses){ c.x += c.vx*dt; c.y += c.vy*dt; c.z += c.vz*dt; c.vy -= 18*dt; c.rot += c.vr*dt; c.life -= dt; }
