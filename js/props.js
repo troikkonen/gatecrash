@@ -110,14 +110,27 @@ function drawTelegraphs(){
 }
 function drawBoss(dt){
   const b = G.boss; poolBegin(pools.boss);
-  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0.05, b.z); it.obj.scale.setScalar(b.scale); it.obj.rotation.set(0, 0, 0);
-    it.obj.traverse(o => { if (o.isMesh && o.material.color) o.material.color.lerp(new THREE.Color(b.def.color), 0.15); });
+  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0.05, b.z); it.obj.scale.setScalar(pools.boss.mutant ? b.scale*1.35 : b.scale); it.obj.rotation.set(0, 0, 0);
+    if (!pools.boss.mutant) it.obj.traverse(o => { if (o.isMesh && o.material.color) o.material.color.lerp(new THREE.Color(b.def.color), 0.15); });
+    else it.obj.traverse(o => { if (o.isMesh && o.material.emissive){ o.material.emissive.set(b.def.color); o.material.emissiveIntensity = b.flash > 0 ? 0.6 : 0.18; } });
     flash(it, b.flash > 0);
-    if (b.phase === 'dying') play(it, 'Death', { once: true });
-    else if (b.anim && b.anim.kind === 'swing') play(it, 'Punch', { once: true, speed: 1.2/b.anim.dur });
-    else if (b.busy && b.busy.kind === 'charge') play(it, 'Running', { speed: 1.6 });
-    else if (b.phase === 'enter' || !b.atLine) play(it, 'Walking', { speed: 0.9 });
-    else play(it, 'Idle');
+    const A = it.actions, has = n => !!A[n];
+    let rot = 0, dy = 0;
+    if (pools.boss.mutant){
+      // Mutant: until its own walk/punch/death clips arrive, Run drives everything and the body language does the rest
+      if (b.phase === 'dying'){ const q = Math.min(1, b.dieT/0.9); rot = q*q*1.4; play(it, has('MDeath') ? 'MDeath' : 'Move', { once: has('MDeath'), speed: has('MDeath') ? 1 : 0.2 }); }
+      else if (b.anim && b.anim.kind === 'swing'){ const a = b.anim, q = a.t < a.dur - 0.35 ? a.t/(a.dur - 0.35) : 1 - (a.t - (a.dur - 0.35))/0.35; rot = -0.25*q; dy = 0.3*q; play(it, has('MPunch') ? 'MPunch' : 'Move', { once: has('MPunch'), speed: has('MPunch') ? 1.2/b.anim.dur : 2.2 }); }
+      else if (b.busy && b.busy.kind === 'charge') play(it, 'Move', { speed: 2.0 });
+      else if (b.phase === 'enter' || !b.atLine) play(it, has('MWalk') ? 'MWalk' : 'Move', { speed: has('MWalk') ? 1 : 0.55 });
+      else play(it, has('MIdle') ? 'MIdle' : 'Move', { speed: has('MIdle') ? 1 : 0.3 });
+    } else {
+      if (b.phase === 'dying') play(it, 'Death', { once: true });
+      else if (b.anim && b.anim.kind === 'swing') play(it, 'Punch', { once: true, speed: 1.2/b.anim.dur });
+      else if (b.busy && b.busy.kind === 'charge') play(it, 'Running', { speed: 1.6 });
+      else if (b.phase === 'enter' || !b.atLine) play(it, 'Walking', { speed: 0.9 });
+      else play(it, 'Idle');
+    }
+    it.obj.rotation.x = rot; it.obj.position.y += dy;
     if (b.phase !== 'dying'){ FX.texts.push({ x: b.x, z: b.z, y: 4.4*b.scale + 0.6, str: String(b.hp), color: '#fff', size: 0.75, life: 0.01 });
       FX.texts.push({ x: b.x, z: b.z, y: 4.4*b.scale + 0.1, str: '▮'.repeat(Math.max(1, Math.round(20*b.hp/b.maxHp))), color: '#ff4d4d', size: 0.3, life: 0.01 }); } }
   poolEnd(pools.boss, dt);
