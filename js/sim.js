@@ -97,7 +97,7 @@ function spawnWave(){
   const pick = () => { const r = Math.random(); return r < D.bruteChance ? 'brute' : r < D.bruteChance + D.runnerChance ? 'runner' : 'grunt'; };
   if (shape === 'block'){
     const kind = Math.random() < D.bruteChance ? 'brute' : (Math.random() < D.runnerChance ? 'runner' : 'grunt');
-    const cols = kind === 'brute' ? 2 : (n >= 9 ? 4 : 3), id = ++G.blockSeq, speed = ENEMY[kind].speed * D.speedMult, gapX = kind === 'brute' ? 0.9 : 0.55;
+    const cols = kind === 'brute' ? 3 : (n >= 16 ? 5 : 4), id = ++G.blockSeq, speed = ENEMY[kind].speed * D.speedMult, gapX = kind === 'brute' ? 0.75 : 0.48;
     for (let i=0;i<n;i++){ const c = i % cols, r = Math.floor(i/cols);
       G.enemies.push({ kind, x: laneX(MID) + (c - (cols-1)/2)*gapX, z: CFG.spawnZ - r*(kind === 'brute' ? 1.3 : 0.9), speed, block: id, seed: Math.random(), hp: 1 }); }
     return;
@@ -123,9 +123,9 @@ function update(dt){
   G.fireTimer -= dt;
   if (G.fireTimer <= 0 && S.n > 0){
     G.fireTimer = w.interval;
-    const shots = w.shots + Math.min(6, Math.floor(Math.sqrt(S.n)/2.5));
+    const shots = w.shots + Math.min(6, Math.floor(Math.sqrt(S.n)/3));
     for (let i=0;i<shots;i++){ const f = shots === 1 ? 0 : (i/(shots-1) - 0.5);
-      G.bullets.push({ x: S.x + f*S.radius*1.6, z: CFG.squadZ - 0.6, vx: f*w.spread*CFG.bulletSpeed*2, dmg: w.dmg, pierce: w.pierce, splash: w.splash, color: w.color, hit: new Set() }); }
+      G.bullets.push({ x: S.x + f*S.radius*1.6, z: CFG.squadZ - 0.6, vx: f*w.spread*CFG.bulletSpeed*2 + rand(-0.9, 0.9), dmg: w.dmg, pierce: w.pierce, splash: w.splash, color: w.color, hit: new Set() }); }
     SFX.shoot(G.weapon); G.recoil = 1; muzzle(S.x, CFG.squadZ - 0.8, w.color, 1.4 + w.dmg*0.12);
   }
   if (G.mech > 0){ G.mech -= dt; G.timers.mech -= dt; if (G.timers.mech <= 0){ G.timers.mech = 0.4;

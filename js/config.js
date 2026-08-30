@@ -5,7 +5,7 @@
 // ============================================================
 const CFG = {
   road: { width: 7.2, lanes: 3, near: 6, far: -44 },      // road extent in z
-  spawnZ: -40,                                              // where things step onto the road
+  spawnZ: -34,                                              // where things step onto the road
   squadZ: 0,                                                // where the squad stands
   maxSquad: 250, startSquad: 12,
   drag: 0.021,                                              // world units per screen pixel of drag
@@ -20,7 +20,7 @@ const laneOfX = x => Math.min(2, Math.max(0, Math.floor((x + CFG.road.width/2) /
 
 // Weapons: you start each level on the first available gun and pick better ones up in the middle lane.
 const WEAPONS = [
-  { name:'Pistol',  interval:0.22, shots:1, dmg:1,  spread:0,    pierce:false, splash:0,   color:'#ffd447' },
+  { name:'Pistol',  interval:0.30, shots:1, dmg:1,  spread:0,    pierce:false, splash:0,   color:'#ffd447' },
   { name:'SMG',     interval:0.11, shots:1, dmg:1,  spread:0,    pierce:false, splash:0,   color:'#ffd447' },
   { name:'Shotgun', interval:0.28, shots:3, dmg:2,  spread:0.16, pierce:false, splash:0,   color:'#ffb347' },
   { name:'Gatling', interval:0.06, shots:2, dmg:1,  spread:0.05, pierce:false, splash:0,   color:'#ffe08a' },
@@ -41,7 +41,7 @@ function difficulty(L){
     world,
     prep:        22 + L*1.5,                              // seconds before the boss steps on
     waveGap:     Math.max(1.0, 2.4 - L*0.05),
-    waveSize:    Math.round(5 * Math.pow(1.095, L-1)),
+    waveSize:    Math.round(12 * Math.pow(1.08, L-1)),   // big blocks: you chew the front rank while the rest keeps coming
     speedMult:   1 + (L-1)*0.023,
     bruteChance: Math.min(0.3, 0.04 + L*0.01),
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
