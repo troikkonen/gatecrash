@@ -12,7 +12,7 @@ const CFG = {
   bulletSpeed: 44, bulletRange: 22,                         // shots fade out before the spawn line — nothing dies at the horizon
 };
 CFG.laneW = CFG.road.width / CFG.road.lanes;
-CFG.conveyor = 9;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
+CFG.conveyor = 6.5;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
 const GAP = { near: -9, far: -15 };                                   // the missing stretch of road in each outer lane (z range)
 const LEFT = 0, MID = 1, RIGHT = 2;
 const laneX = lane => (lane - 1) * CFG.laneW;                       // centre x of a lane
@@ -30,9 +30,9 @@ const WEAPONS = [
 
 // Every regular enemy dies to one bullet. Speeds in units/s, "hit" is what it costs you if it reaches the squad.
 const ENEMY = {
-  grunt:  { speed: 10.5, hit: 1, scale: 0.85, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
-  runner: { speed: 15.0, hit: 1, scale: 0.75, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
-  brute:  { speed: 8.0, hit: 3, scale: 1.25, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
+  grunt:  { speed: 5.5, hit: 1, scale: 0.85, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
+  runner: { speed: 8.5, hit: 1, scale: 0.75, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
+  brute:  { speed: 4.2, hit: 3, scale: 1.25, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
 };
 
 // Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.
@@ -56,7 +56,7 @@ function difficulty(L){
     prep:        22 + L*1.5,                              // seconds before the boss steps on
     waveGap:     Math.max(1.0, 2.4 - L*0.05),
     waveSize:    Math.min(40, Math.round(12 * Math.pow(1.06, L-1))),   // big blocks: you chew the front rank while the rest keeps coming
-    speedMult:   1 + (L-1)*0.023,
+    speedMult:   1 + (L-1)*0.018,
     bruteChance: Math.min(0.3, 0.04 + L*0.01),
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
     startWeapon: Math.min(3, world-1),
@@ -68,7 +68,7 @@ function difficulty(L){
     weaponGap:   8, rockGap: 15,
     rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
     bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.5, world-1)) : Math.round(200 * Math.pow(1.10, L-1)),
-    bossAdvance: 8,                                       // seconds for the boss to walk down to your line, then it fights there
+    bossAdvance: 10,                                       // seconds for the boss to walk down to your line, then it fights there
     telegraph:   Math.max(0.6, 1.05 - world*0.06),        // warning time before an attack lands
   };
 }

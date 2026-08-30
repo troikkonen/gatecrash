@@ -19,7 +19,7 @@ function drawCharacters(dt){
     it.obj.position.set(e.x, 0.05, e.z); it.obj.rotation.set(0, Math.sin(t*2 + e.seed*6)*0.06, 0); it.obj.scale.setScalar(def.scale); blobs.push({ x: e.x, z: e.z, r: def.radius });
     const near = e.z > CFG.squadZ - 2.5 && laneOfX(S.x) === MID;
     const atk = it.actions.WAttack ? 'WAttack' : 'ZAttack';
-    play(it, near && it.actions[atk] ? atk : (it.actions[def.anim] ? def.anim : 'ZWalk'), { speed: (e.kind === 'runner' ? 1.4 : e.kind === 'brute' ? 0.9 : 1.2) * G.D.speedMult }); }
+    play(it, near && it.actions[atk] ? atk : (it.actions[def.anim] ? def.anim : 'ZWalk'), { speed: (e.kind === 'runner' ? 1.2 : e.kind === 'brute' ? 0.8 : 1.0) * G.D.speedMult }); }
   for (const k of ['grunt','runner','brute']) poolEnd(pools[k], dt);
   // corpses: each keeps its own pool slot so its death animation plays through without restarting
   const live = new Set(G.corpses);
