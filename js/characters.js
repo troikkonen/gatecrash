@@ -25,7 +25,7 @@ function makePool(k, n, opts){
   const items = [];
   for (let i=0;i<n;i++){
     const obj = THREE.SkeletonUtils.clone(g.scene);
-    obj.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); if (opts.color) o.material.color.set(opts.color); if (o.material.isMeshStandardMaterial){ o.material.roughness = Math.min(o.material.roughness, 0.6); o.material.envMapIntensity = 0.55; } } });
+    obj.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); if (opts.color) o.material.color.set(opts.color); if (opts.metal && o.material.isMeshStandardMaterial){ o.material.metalness = 0.85; o.material.roughness = 0.35; o.material.emissive.set(0x2bff7a); o.material.emissiveIntensity = /eye|light|lens|glass/i.test(o.name + (o.material.name||'')) ? 1.5 : 0.08; } if (o.material.isMeshStandardMaterial){ o.material.roughness = Math.min(o.material.roughness, 0.6); o.material.envMapIntensity = 0.55; } } });
     const mixer = new THREE.AnimationMixer(obj), actions = {};
     for (const clip of g.animations) actions[clip.name] = mixer.clipAction(clip);
     if (opts.extra) for (const n of opts.extra){ if (extraClips[n]) actions[n] = mixer.clipAction(extraClips[n]); }
@@ -57,7 +57,7 @@ const charactersLoaded = Promise.all([...Object.keys(MODELS).map(loadModel), ...
   pools.bruteCorpse = makePool(gltfs.warrok ? 'warrok' : zk, 4, { scale: 0.95, color: ENEMY.brute.color, extra: gltfs.warrok ? ['WDeath'] : Z });
   pools.boss    = makePool(gltfs.mutant ? 'mutant' : 'robot', 1, { scale: 1, extra: gltfs.mutant ? ['MWalk','MPunch','MDeath','MIdle','MRoar'] : [] });
   pools.boss.mutant = !!gltfs.mutant;
-  pools.mech    = makePool('robot', 1, { scale: 0.7, color: '#5a8f3a' });
+  pools.mech    = makePool('robot', 1, { scale: 0.32, color: '#3b5a2f', metal: true });
   charactersReady = !!(pools.soldier && pools.grunt && pools.boss);
   return charactersReady;
 });

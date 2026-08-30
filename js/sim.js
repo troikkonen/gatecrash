@@ -203,8 +203,8 @@ function update(dt){
     SFX.shoot(G.weapon); G.recoil = 1; muzzle(S.x, CFG.squadZ - 0.8, w.color, 1.4 + w.dmg*0.12);
   }
   if (G.mech > 0){ G.mech -= dt; G.timers.mech -= dt; if (G.timers.mech <= 0){ G.timers.mech = 0.4;
-    for (const off of [-0.5, 0.5]) G.bullets.push({ x: S.x + off, z: CFG.squadZ + 1.2, vx: 0, dmg: 8, pierce: false, splash: 1.8, color: '#b6ff7d', hit: new Set() });
-    muzzle(S.x, CFG.squadZ + 1.2, '#b6ff7d', 1.2); } }
+    for (const off of [-0.4, 0.4]) G.bullets.push({ x: S.x + off, z: CFG.squadZ - S.radius - 2.0, vx: 0, dmg: 8, pierce: false, splash: 1.8, color: '#b6ff7d', hit: new Set() });
+    muzzle(S.x, CFG.squadZ - S.radius - 2.0, '#b6ff7d', 1.2); } }
   if (G.shield > 0) G.shield -= dt; if (G.rightOpen > 0) G.rightOpen -= dt;
   for (const b of G.bullets){ b.z -= CFG.bulletSpeed*dt; b.x += b.vx*dt; }
   G.bullets = G.bullets.filter(b => b.z > CFG.squadZ - CFG.bulletRange && !b.dead);

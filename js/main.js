@@ -31,11 +31,11 @@ function drawCharacters(dt){
   for (const cp of [pools.corpse, pools.bruteCorpse]) for (const it of cp.items){ it.obj.visible = !!it.owner; if (it.owner) it.mixer.update(dt); }
   // mech walker behind the squad
   poolBegin(pools.mech);
-  if (G.mech > 0){ const it = poolTake(pools.mech); it.obj.position.set(S.x, 0.05, CFG.squadZ + 1.6); it.obj.rotation.set(0, Math.PI, 0); it.obj.scale.setScalar(0.7); play(it, moving ? 'Walking' : 'Idle', { speed: 1.2 });
-    FX.texts.push({ x: S.x, z: CFG.squadZ + 2.6, y: 0.2, str: '▮'.repeat(Math.max(1, Math.round(12*Math.min(1, G.mech/30)))), color: '#b6ff7d', size: 0.22, life: 0.01 }); }
+  if (G.mech > 0){ const it = poolTake(pools.mech); it.obj.position.set(S.x, 0.05, CFG.squadZ - S.radius - 1.3); it.obj.rotation.set(0, Math.PI, 0); it.obj.scale.setScalar(0.32); play(it, moving ? 'Walking' : 'Idle', { speed: 1.2 });
+    FX.texts.push({ x: S.x, z: CFG.squadZ - S.radius - 0.6, y: 0.2, str: '▮'.repeat(Math.max(1, Math.round(12*Math.min(1, G.mech/30)))), color: '#b6ff7d', size: 0.22, life: 0.01 }); }
   poolEnd(pools.mech, dt);
   if (G.boss) blobs.push({ x: G.boss.x, z: G.boss.z, r: 1.4*G.boss.scale });
-  if (G.mech > 0) blobs.push({ x: S.x, z: CFG.squadZ + 1.6, r: 0.9 });
+  if (G.mech > 0) blobs.push({ x: S.x, z: CFG.squadZ - S.radius - 1.3, r: 0.7 });
   blobsDraw(blobs);
   // block counters
   const fronts = {};

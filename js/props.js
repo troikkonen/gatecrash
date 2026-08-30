@@ -50,20 +50,29 @@ function drawGap(gap){
   if (gap.open) FX.texts.push({ x, z: GAP.far - 0.6, y: 0.5, str: gap.built + '/' + gap.boards + (gap.lane === RIGHT ? '  MECH' : ''), color: '#fff', size: 0.5, life: 0.01 });
 }
 
-// ---------- rocks: lumpy icosahedra; ice is translucent ----------
+// ---------- rocks: a stone (or ice) shell around a glowing core, wrapped in a force-field cage that shows through as you crack it ----------
 (function rocks(){
-  const mk = () => { const geo = new THREE.IcosahedronGeometry(0.95, 1); const pos = geo.attributes.position; for (let i=0;i<pos.count;i++){ const s = 0.82 + Math.random()*0.36; pos.setXYZ(i, pos.getX(i)*s, pos.getY(i)*s*0.85, pos.getZ(i)*s); } geo.computeVertexNormals(); geo.translate(0, 0.8, 0); return geo; };
-  PROPS.rocks = Array.from({length: 4}, () => { const m = new THREE.Mesh(mk(), new THREE.MeshStandardMaterial({ color: 0x6e6759, emissive: 0xff7a1a, emissiveIntensity: 0, flatShading: true, roughness: 0.9 })); m.castShadow = true; m.visible = false; scene.add(m); return m; });
+  const mkShell = () => { const geo = new THREE.IcosahedronGeometry(1.0, 1); const pos = geo.attributes.position; for (let i=0;i<pos.count;i++){ const s = 0.85 + Math.random()*0.3; pos.setXYZ(i, pos.getX(i)*s, pos.getY(i)*s*0.9, pos.getZ(i)*s); } geo.computeVertexNormals(); geo.translate(0, 1.0, 0); return geo; };
+  PROPS.rocks = Array.from({length: 4}, () => {
+    const g = new THREE.Group();
+    const shell = new THREE.Mesh(mkShell(), new THREE.MeshStandardMaterial({ color: 0x6e6759, roughness: 0.9, flatShading: true, transparent: true, opacity: 1, envMapIntensity: 0.3 })); shell.castShadow = true; g.add(shell);
+    const cage = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1.18, 1)), new THREE.LineBasicMaterial({ color: 0x4fc3ff, transparent: true, opacity: 0.5 })); cage.position.y = 1.0; g.add(cage);
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x4fc3ff, emissiveIntensity: 2.5, roughness: 0.2 })); core.position.y = 1.0; g.add(core);
+    const light = new THREE.PointLight(0x4fc3ff, 0, 5, 2); light.position.y = 1.2; g.add(light);
+    g.visible = false; scene.add(g); return { g, shell, cage, core, light };
+  });
 })();
-function drawRock(m, it){
-  m.position.set(laneX(it.lane), 0.05 + (it.fall ? -it.fall*4 : 0), it.z); m.visible = true; m.rotation.y = it.z*0.4;
-  const dmg = 1 - it.hp/it.maxHp, ice = G.D.world >= 4;
-  m.material.color.set(it.flash > 0 ? 0xffffff : ice ? 0x9fd8ff : 0x6e6759); m.material.transparent = ice; m.material.opacity = ice ? 0.8 : 1;
-  m.material.emissive.set(it.reward.color); m.material.emissiveIntensity = 0.2 + dmg*1.6;
-  FX.texts.push({ x: m.position.x, z: it.z, y: 2.0, str: String(it.hp), color: '#fff', size: 0.85, life: 0.01 });
+function drawRock(slot, it){
+  const { g, shell, cage, core, light } = slot, dmg = 1 - it.hp/it.maxHp, ice = G.D.world >= 4, t = performance.now()/1000, col = it.reward.color;
+  g.position.set(laneX(it.lane), 0.05 + (it.fall ? -it.fall*4 : 0), it.z); g.visible = true;
+  shell.rotation.y = it.z*0.35; shell.material.color.set(it.flash > 0 ? 0xffffff : ice ? 0x9fd8ff : 0x6e6759); shell.material.opacity = ice ? 0.55 : 1 - dmg*0.75; shell.scale.setScalar(1 - dmg*0.12);
+  cage.rotation.set(t*0.4, t*0.7, 0); cage.material.color.set(col); cage.material.opacity = 0.25 + dmg*0.65;
+  core.material.emissive.set(col); core.material.emissiveIntensity = 1.5 + dmg*3 + Math.sin(t*6)*0.5; core.scale.setScalar(0.8 + dmg*0.5 + Math.sin(t*6)*0.05);
+  light.color.set(col); light.intensity = 0.6 + dmg*2.2;
+  FX.texts.push({ x: g.position.x, z: it.z, y: 2.4, str: String(it.hp), color: '#fff', size: 0.85, life: 0.01 });
   const tag = it.reward.kind === 'troops' ? '+' + it.reward.amount : it.reward.kind === 'weapon' ? WEAPONS[it.reward.gun].name.toUpperCase() : it.reward.kind.toUpperCase();
-  FX.texts.push({ x: m.position.x, z: it.z + 0.6, y: 0.4, str: tag, color: it.reward.color, size: 0.42, life: 0.01 });
-  FX.texts.push({ x: m.position.x, z: it.z, y: 2.7, str: 'SHOOT TO CRACK', color: '#fff', size: 0.3, life: 0.01 });
+  FX.texts.push({ x: g.position.x, z: it.z + 0.7, y: 0.4, str: tag, color: col, size: 0.42, life: 0.01 });
+  FX.texts.push({ x: g.position.x, z: it.z, y: 3.1, str: 'SHOOT TO CRACK', color: '#fff', size: 0.3, life: 0.01 });
 }
 
 // ---------- crates: wooden box with an icon above ----------
@@ -142,7 +151,7 @@ function drawProps(){
   for (; gi < PROPS.gates.length; gi++) PROPS.gates[gi].g.visible = false;
   for (const gap of G.gaps) drawGap(gap);
   let ri = 0, ci = 0;
-  PROPS.rocks.forEach(m => m.visible = false); PROPS.crates.forEach(c => c.g.visible = false);
+  PROPS.rocks.forEach(r => r.g.visible = false); PROPS.crates.forEach(c => c.g.visible = false);
   for (const it of G.items){ if (it.type === 'rock' && !it.cracked && ri < PROPS.rocks.length) drawRock(PROPS.rocks[ri++], it); else if (it.type === 'crate' && ci < PROPS.crates.length) drawCrate(PROPS.crates[ci++], it); }
   const S = G.squad; PROPS.shield.visible = G.shield > 0;
   if (PROPS.shield.visible){ const r = S.radius + 0.5; PROPS.shield.position.set(S.x, 0.1, CFG.squadZ); PROPS.shield.scale.set(r, r, 1); PROPS.shield.material.opacity = 0.35 + 0.25*Math.sin(performance.now()/120); }
