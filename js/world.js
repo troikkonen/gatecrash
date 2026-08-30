@@ -18,8 +18,8 @@ function resize(){ renderer.setSize(window.innerWidth, window.innerHeight, false
 addEventListener('resize', resize); resize();
 
 // ---------- sky + fog ----------
-const SKY_TOP = 0x5c7ba3, SKY_HORIZON = 0xb9c6d6;
-scene.fog = new THREE.Fog(SKY_HORIZON, 34, 78);
+const SKY_TOP = 0x2c3d5e, SKY_HORIZON = 0xc98f6e;   // dusk
+scene.fog = new THREE.Fog(0x9d8577, 30, 74);
 const skyGeo = new THREE.SphereGeometry(120, 24, 12);
 const skyMat = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { top: { value: new THREE.Color(SKY_TOP) }, bottom: { value: new THREE.Color(SKY_HORIZON) } },
@@ -28,9 +28,9 @@ const skyMat = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: fals
 scene.add(new THREE.Mesh(skyGeo, skyMat));
 
 // ---------- lights ----------
-scene.add(new THREE.HemisphereLight(0xcfdbe8, 0x3a3f48, 0.3));
-const sun = new THREE.DirectionalLight(0xfff1dc, 1.25);
-sun.position.set(-9, 18, 6); sun.castShadow = true;
+scene.add(new THREE.HemisphereLight(0x8fa0c4, 0x3a2f2a, 0.35));
+const sun = new THREE.DirectionalLight(0xffc48a, 1.5);   // low warm sun
+sun.position.set(-14, 11, 8); sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0002; sun.shadow.normalBias = 0.08;
 Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 10, bottom: -36, near: 1, far: 60 });
 sun.target.position.set(0, 0, -10); scene.add(sun, sun.target);
@@ -78,20 +78,59 @@ for (const x of [-R.width/2 - 0.1, R.width/2 + 0.1]){
   for (let z = R.near; z > R.far; z -= 3){ const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.8, 0.12), railMat); p.position.set(x, 0.4, z); scene.add(p); }
 }
 
-// ---------- trees (instanced low-poly pines on both sides) ----------
-(function trees(){
-  const trunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 1.2, 6); trunkGeo.translate(0, 0.6, 0);
-  const coneGeo = new THREE.ConeGeometry(1.1, 3.2, 7); coneGeo.translate(0, 2.6, 0);
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3526, roughness: 0.9 }), coneMat = new THREE.MeshStandardMaterial({ color: 0x0f2a18, roughness: 0.95, envMapIntensity: 0.2 });
-  const N = 140, trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, N), cones = new THREE.InstancedMesh(coneGeo, coneMat, N);
-  cones.castShadow = true;
+// ---------- scenery: pines, dead trees, boulders, ridge, roadside wreckage, lamp posts ----------
+(function scenery(){
   const d = new THREE.Object3D();
-  for (let i=0;i<N;i++){
-    const side = i%2 ? 1 : -1, z = R.near + 2 - Math.random()*(R.near - R.far + 10), x = side*(R.width/2 + 2.2 + Math.random()*9), s = 0.7 + Math.random()*0.9;
-    d.position.set(x, -0.3 - Math.random()*1.2, z); d.rotation.set(0, Math.random()*6.28, 0); d.scale.setScalar(s); d.updateMatrix();
-    trunks.setMatrixAt(i, d.matrix); cones.setMatrixAt(i, d.matrix);
-  }
-  scene.add(trunks, cones);
+  const place = (im, i, x, y, z, s, ry) => { d.position.set(x, y, z); d.rotation.set(0, ry, 0); d.scale.setScalar(s); d.updateMatrix(); im.setMatrixAt(i, d.matrix); };
+  // pines: three stacked cones on a trunk, dark blue-green so the road stays the bright thing
+  const trunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 1.6, 6); trunkGeo.translate(0, 0.8, 0);
+  const c1 = new THREE.ConeGeometry(1.3, 2.4, 7); c1.translate(0, 2.4, 0);
+  const c2 = new THREE.ConeGeometry(1.0, 2.0, 7); c2.translate(0, 3.6, 0);
+  const c3 = new THREE.ConeGeometry(0.65, 1.6, 7); c3.translate(0, 4.7, 0);
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1e, roughness: 1, envMapIntensity: 0.2 });
+  const pineMat = new THREE.MeshStandardMaterial({ color: 0x14301f, roughness: 0.95, envMapIntensity: 0.25 });
+  const N = 150, trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, N), a1 = new THREE.InstancedMesh(c1, pineMat, N), a2 = new THREE.InstancedMesh(c2, pineMat, N), a3 = new THREE.InstancedMesh(c3, pineMat, N);
+  a1.castShadow = a2.castShadow = true;
+  for (let i=0;i<N;i++){ const side = i%2 ? 1 : -1, z = R.near + 4 - Math.random()*(R.near - R.far + 14), x = side*(R.width/2 + 2.4 + Math.random()*11), s = 0.6 + Math.random()*1.0, ry = Math.random()*6.28, y = -0.6 - Math.random()*1.4;
+    for (const im of [trunks, a1, a2, a3]) place(im, i, x, y, z, s, ry); }
+  scene.add(trunks, a1, a2, a3);
+  // dead trees: bare trunks with a branch
+  const deadGeo = new THREE.CylinderGeometry(0.06, 0.16, 3.2, 5); deadGeo.translate(0, 1.6, 0);
+  const branchGeo = new THREE.CylinderGeometry(0.03, 0.06, 1.3, 4); branchGeo.translate(0, 0.65, 0); branchGeo.rotateZ(0.8); branchGeo.translate(0.1, 2.0, 0);
+  const deadMat = new THREE.MeshStandardMaterial({ color: 0x2a2320, roughness: 1 });
+  const ND = 30, dead = new THREE.InstancedMesh(deadGeo, deadMat, ND), branches = new THREE.InstancedMesh(branchGeo, deadMat, ND);
+  for (let i=0;i<ND;i++){ const side = i%2 ? 1 : -1, z = R.near - Math.random()*(R.near - R.far), x = side*(R.width/2 + 1.6 + Math.random()*4), s = 0.7 + Math.random()*0.8, ry = Math.random()*6.28; place(dead, i, x, -0.4, z, s, ry); place(branches, i, x, -0.4, z, s, ry); }
+  scene.add(dead, branches);
+  // boulders
+  const rockGeo = new THREE.IcosahedronGeometry(0.8, 1); const pos = rockGeo.attributes.position; for (let i=0;i<pos.count;i++){ const k = 0.8 + Math.random()*0.4; pos.setXYZ(i, pos.getX(i)*k, pos.getY(i)*k*0.7, pos.getZ(i)*k); } rockGeo.computeVertexNormals();
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x4d4a48, roughness: 0.95, flatShading: true, envMapIntensity: 0.3 });
+  const NR = 40, rocks = new THREE.InstancedMesh(rockGeo, rockMat, NR); rocks.castShadow = true;
+  for (let i=0;i<NR;i++){ const side = i%2 ? 1 : -1, z = R.near - Math.random()*(R.near - R.far), x = side*(R.width/2 + 1.2 + Math.random()*6), s = 0.5 + Math.random()*1.6; place(rocks, i, x, -0.9 + s*0.2, z, s, Math.random()*6.28); }
+  scene.add(rocks);
+  // distant ridge lines
+  const mkRidge = (color, y, z, sx) => { const sh = new THREE.Shape(); sh.moveTo(-120, -10); let rx = -120; while (rx < 120){ rx += 6 + Math.random()*10; sh.lineTo(rx, 4 + Math.random()*11); } sh.lineTo(120, -10); sh.lineTo(-120, -10);
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshBasicMaterial({ color })); m.position.set(0, y, z); m.scale.set(sx, 1, 1); scene.add(m); };
+  mkRidge(0x3a3f55, -3, R.far - 32, 1); mkRidge(0x2a2e40, -1, R.far - 48, 1.3);
+  // roadside wreckage on the deck edge: concrete barriers and barrels, some knocked over
+  const barMat = new THREE.MeshStandardMaterial({ color: 0x8b8a86, roughness: 0.9 }), barrelMat = new THREE.MeshStandardMaterial({ color: 0x8a3b2a, roughness: 0.6, metalness: 0.4 });
+  const barGeo = new THREE.BoxGeometry(0.5, 0.7, 1.6); barGeo.translate(0, 0.35, 0);
+  const barrelGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.9, 10); barrelGeo.translate(0, 0.45, 0);
+  const NB = 18, bars = new THREE.InstancedMesh(barGeo, barMat, NB), barrels = new THREE.InstancedMesh(barrelGeo, barrelMat, 10); bars.castShadow = barrels.castShadow = true;
+  for (let i=0;i<NB;i++){ const side = i%2 ? 1 : -1, z = R.near - 2 - i*2.6 - Math.random()*1.5, x = side*(R.width/2 + 0.75); d.position.set(x, -0.35, z); d.rotation.set(Math.random() < 0.2 ? 0.6*side : 0, Math.random()*0.3 - 0.15, Math.random() < 0.15 ? 1.4*side : 0); d.scale.setScalar(1); d.updateMatrix(); bars.setMatrixAt(i, d.matrix); }
+  for (let i=0;i<10;i++){ const side = i%2 ? 1 : -1, z = R.near - 5 - i*4.4 - Math.random()*2, x = side*(R.width/2 + 0.7); const over = Math.random() < 0.4; d.position.set(x, over ? -0.05 : -0.4, z); d.rotation.set(over ? Math.PI/2 : 0, Math.random()*3, over ? 0.3 : 0); d.scale.setScalar(1); d.updateMatrix(); barrels.setMatrixAt(i, d.matrix); }
+  scene.add(bars, barrels);
+  // lamp posts with glowing heads (bloom catches them)
+  const postGeo = new THREE.CylinderGeometry(0.05, 0.07, 3.4, 6); postGeo.translate(0, 1.7, 0);
+  const headGeo = new THREE.BoxGeometry(0.5, 0.14, 0.24); headGeo.translate(0.22, 3.4, 0);
+  const postMat = new THREE.MeshStandardMaterial({ color: 0x3a3f48, metalness: 0.7, roughness: 0.4 });
+  const headMat = new THREE.MeshStandardMaterial({ color: 0xfff0c0, emissive: 0xffd08a, emissiveIntensity: 2.2 });
+  const NL = 10, posts = new THREE.InstancedMesh(postGeo, postMat, NL), heads = new THREE.InstancedMesh(headGeo, headMat, NL);
+  for (let i=0;i<NL;i++){ const side = i%2 ? 1 : -1, z = R.near - 4 - i*4.6, x = side*(R.width/2 + 0.35); d.position.set(x, 0, z); d.rotation.set(0, side > 0 ? Math.PI : 0, 0); d.scale.setScalar(1); d.updateMatrix(); posts.setMatrixAt(i, d.matrix); heads.setMatrixAt(i, d.matrix); }
+  scene.add(posts, heads);
+  for (const z of [-4, -13]){ const l = new THREE.PointLight(0xffc880, 0.9, 12, 2); l.position.set(0, 3.2, z); scene.add(l); }
+  // tire tracks worn into the middle lane
+  const trackMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false });
+  for (const x of [-0.55, 0.55]){ const t = new THREE.Mesh(new THREE.PlaneGeometry(0.35, R.near - R.far), trackMat); t.rotation.x = -Math.PI/2; t.position.set(x, 0.062, (R.near + R.far)/2); scene.add(t); }
 })();
 
 // ---------- mist drifting over the road ----------

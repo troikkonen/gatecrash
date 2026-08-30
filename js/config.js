@@ -5,11 +5,11 @@
 // ============================================================
 const CFG = {
   road: { width: 7.2, lanes: 3, near: 6, far: -44 },      // road extent in z
-  spawnZ: -34,                                              // where things step onto the road
+  spawnZ: -26,                                              // close enough that the horde reaches your line                                              // where things step onto the road
   squadZ: 0,                                                // where the squad stands
   maxSquad: 250, startSquad: 12,
   drag: 0.021,                                              // world units per screen pixel of drag
-  bulletSpeed: 44,
+  bulletSpeed: 44, bulletRange: 22,                         // shots fade out before the spawn line — nothing dies at the horizon
 };
 CFG.laneW = CFG.road.width / CFG.road.lanes;
 CFG.conveyor = 9;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
@@ -30,9 +30,9 @@ const WEAPONS = [
 
 // Every regular enemy dies to one bullet. Speeds in units/s, "hit" is what it costs you if it reaches the squad.
 const ENEMY = {
-  grunt:  { speed: 9.5, hit: 1, scale: 0.62, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
+  grunt:  { speed: 10.5, hit: 1, scale: 0.62, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
   runner: { speed: 15.0, hit: 1, scale: 0.55, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
-  brute:  { speed: 7.0, hit: 3, scale: 0.95, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
+  brute:  { speed: 8.0, hit: 3, scale: 0.95, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
 };
 
 // Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.
@@ -68,7 +68,7 @@ function difficulty(L){
     weaponGap:   8, rockGap: 15,
     rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
     bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.5, world-1)) : Math.round(200 * Math.pow(1.10, L-1)),
-    bossAdvance: Math.max(22, 40 - L),                    // seconds for the boss to walk down to your line
+    bossAdvance: 8,                                       // seconds for the boss to walk down to your line, then it fights there
     telegraph:   Math.max(0.6, 1.05 - world*0.06),        // warning time before an attack lands
   };
 }

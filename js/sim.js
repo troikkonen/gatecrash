@@ -46,7 +46,7 @@ function loseTroops(k, x, z){
   if (G.squad.n <= 0){ G.squad.n = 0; gameOver(); }
 }
 function killEnemy(e){
-  e.dead = true; G.score += ENEMY[e.kind].hit; burst(e.x, e.z, ENEMY[e.kind].color, 4, 0.6); sparks(e.x, e.z, 5); decal(e.x, e.z, 'blood', 0.5 + ENEMY[e.kind].hit*0.2); SFX.kill();
+  e.dead = true; G.score += ENEMY[e.kind].hit; burst(e.x, e.z, ENEMY[e.kind].color, 4, 0.6); sparks(e.x, e.z, 5); decal(e.x, e.z, 'blood', 0.3 + ENEMY[e.kind].hit*0.12); SFX.kill();
   G.corpses.push({ kind: e.kind, x: e.x, z: e.z, x0: e.x, z0: e.z, y: 0, vx: rand(-2,2), vy: rand(4,7), vz: rand(2,5), rot: 0, vr: rand(-6,6), life: 1.6 });
 }
 
@@ -99,7 +99,7 @@ function collectCrate(it){
 // ---------- boss ----------
 function spawnBoss(){
   const D = G.D, named = G.level % 5 === 0, def = named ? BOSSES[D.world-1] : CAPTAIN;
-  G.boss = { def, named, hp: D.bossHp, maxHp: D.bossHp, x: 0, z: CFG.spawnZ - 6, targetZ: -20, phase: 'enter', attackTimer: 3, cooldown: named ? Math.max(1.6, 3.4 - D.world*0.3) : 3.6,
+  G.boss = { def, named, hp: D.bossHp, maxHp: D.bossHp, x: 0, z: CFG.spawnZ - 4, targetZ: -16, phase: 'enter', attackTimer: 3, cooldown: named ? Math.max(1.6, 3.4 - D.world*0.3) : 3.6,
     hitCost: (named ? 10 : 5) + D.world*4, flash: 0, anim: null, busy: null, crush: 0, scale: named ? 0.95 + D.world*0.08 : 0.8, dmgAcc: 0, dmgT: 0 };
   G.intro = 2.6; SFX.roar(); kick(10); uiBossName(def.name);
 }
@@ -117,7 +117,7 @@ function bossUpdate(dt){
   if (b.flash > 0) b.flash -= dt;
   if (b.anim){ b.anim.t += dt; if (b.anim.t > b.anim.dur) b.anim = null; }
   if (b.phase === 'dying'){ b.dieT += dt; if (b.dieT > 1.8) bossFinish(); return; }
-  if (b.phase === 'enter'){ b.z += (b.targetZ - b.z)*Math.min(1, dt*1.4); if (b.targetZ - b.z < 0.3) b.phase = 'fight'; }
+  if (b.phase === 'enter'){ b.z += (b.targetZ - b.z)*Math.min(1, dt*2.2); if (b.targetZ - b.z < 0.3) b.phase = 'fight'; }
   if (b.busy && b.busy.kind === 'charge'){
     const c = b.busy; c.t += dt; const cx = laneX(c.lane);
     if (c.phase === 'wind'){ b.x += (cx - b.x)*Math.min(1, dt*6); if (c.t > c.dur){ c.phase = 'go'; c.t = 0; } }
@@ -125,7 +125,7 @@ function bossUpdate(dt){
     else { b.z -= dt*18; if (b.z <= b.targetZ){ b.z = b.targetZ; b.busy = null; b.attackTimer = b.cooldown; } }
   } else if (b.phase === 'fight'){
     b.x += (Math.sin(G.elapsed*0.7)*0.6 - b.x)*Math.min(1, dt*1.5);                     // paces inside the middle lane
-    const lineZ = CFG.squadZ - 2.6; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 20)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
+    const lineZ = CFG.squadZ - 3.2; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 16)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
     b.atLine = b.targetZ >= lineZ - 0.2;
     b.attackTimer -= dt;
     if (b.attackTimer <= 0){ const p = b.def.patterns; bossAttack(p[Math.floor(Math.random()*p.length)]); b.attackTimer = (b.atLine ? b.cooldown*0.6 : b.cooldown) + rand(0, 0.6); }
@@ -197,7 +197,7 @@ function update(dt){
   G.fireTimer -= dt;
   if (G.fireTimer <= 0 && S.n > 0){
     G.fireTimer = w.interval;
-    const shots = w.shots + Math.min(6, Math.floor(Math.sqrt(S.n)/3));
+    const shots = w.shots + Math.min(3, Math.floor(Math.sqrt(S.n)/5));   // a big squad adds barrels, but never enough to melt the horde at spawn
     for (let i=0;i<shots;i++){ const f = shots === 1 ? 0 : (i/(shots-1) - 0.5);
       G.bullets.push({ x: S.x + f*S.radius*1.6, z: CFG.squadZ - 0.6, vx: f*w.spread*CFG.bulletSpeed*2 + rand(-0.9, 0.9), dmg: w.dmg, pierce: w.pierce, splash: w.splash, color: w.color, hit: new Set() }); }
     SFX.shoot(G.weapon); G.recoil = 1; muzzle(S.x, CFG.squadZ - 0.8, w.color, 1.4 + w.dmg*0.12);
@@ -207,7 +207,7 @@ function update(dt){
     muzzle(S.x, CFG.squadZ + 1.2, '#b6ff7d', 1.2); } }
   if (G.shield > 0) G.shield -= dt; if (G.rightOpen > 0) G.rightOpen -= dt;
   for (const b of G.bullets){ b.z -= CFG.bulletSpeed*dt; b.x += b.vx*dt; }
-  G.bullets = G.bullets.filter(b => b.z > CFG.spawnZ - 4 && !b.dead);
+  G.bullets = G.bullets.filter(b => b.z > CFG.squadZ - CFG.bulletRange && !b.dead);
 
   // conveyor: gates, crates and rocks come down the road
   const conv = CFG.conveyor * D.speedMult, T = G.timers;
