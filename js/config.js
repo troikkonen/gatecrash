@@ -5,7 +5,7 @@
 // ============================================================
 const CFG = {
   road: { width: 7.2, lanes: 3, near: 6, far: -44 },      // road extent in z
-  spawnZ: -26,                                              // close enough that the horde reaches your line                                              // where things step onto the road
+  spawnZ: -22,                                              // close enough that the horde reaches your line                                              // where things step onto the road
   squadZ: 0,                                                // where the squad stands
   maxSquad: 250, startSquad: 12,
   drag: 0.021,                                              // world units per screen pixel of drag
@@ -30,9 +30,9 @@ const WEAPONS = [
 
 // Every regular enemy dies to one bullet. Speeds in units/s, "hit" is what it costs you if it reaches the squad.
 const ENEMY = {
-  grunt:  { speed: 10.5, hit: 1, scale: 0.62, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
-  runner: { speed: 15.0, hit: 1, scale: 0.55, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
-  brute:  { speed: 8.0, hit: 3, scale: 0.95, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
+  grunt:  { speed: 10.5, hit: 1, scale: 0.85, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
+  runner: { speed: 15.0, hit: 1, scale: 0.75, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
+  brute:  { speed: 8.0, hit: 3, scale: 1.25, color: '#c9c9c9', anim: 'WWalk',  radius: 0.75 },
 };
 
 // Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.

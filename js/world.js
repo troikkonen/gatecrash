@@ -12,14 +12,14 @@ const scene = new THREE.Scene();
 // image-based lighting: a neutral room baked into an environment map gives metal and armor real highlights
 const pmrem = new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
 scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
-const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 150);
-const CAM = { pos: new THREE.Vector3(0, 10.5, 11.5), look: new THREE.Vector3(0, 0.2, -9), lean: 0, shake: 0 };
+const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 150);
+const CAM = { pos: new THREE.Vector3(0, 7.8, 6.8), look: new THREE.Vector3(0, 0.6, -7.5), lean: 0, shake: 0 };   // close and low: characters fill the screen, the fight is in front of you
 function resize(){ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize); resize();
 
 // ---------- sky + fog ----------
 const SKY_TOP = 0x2c3d5e, SKY_HORIZON = 0xc98f6e;   // dusk
-scene.fog = new THREE.Fog(0x9d8577, 30, 74);
+scene.fog = new THREE.Fog(0x9d8577, 22, 48);
 const skyGeo = new THREE.SphereGeometry(120, 24, 12);
 const skyMat = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { top: { value: new THREE.Color(SKY_TOP) }, bottom: { value: new THREE.Color(SKY_HORIZON) } },

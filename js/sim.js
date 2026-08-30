@@ -125,7 +125,7 @@ function bossUpdate(dt){
     else { b.z -= dt*18; if (b.z <= b.targetZ){ b.z = b.targetZ; b.busy = null; b.attackTimer = b.cooldown; } }
   } else if (b.phase === 'fight'){
     b.x += (Math.sin(G.elapsed*0.7)*0.6 - b.x)*Math.min(1, dt*1.5);                     // paces inside the middle lane
-    const lineZ = CFG.squadZ - 3.2; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 16)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
+    const lineZ = CFG.squadZ - 3.8; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 16)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
     b.atLine = b.targetZ >= lineZ - 0.2;
     b.attackTimer -= dt;
     if (b.attackTimer <= 0){ const p = b.def.patterns; bossAttack(p[Math.floor(Math.random()*p.length)]); b.attackTimer = (b.atLine ? b.cooldown*0.6 : b.cooldown) + rand(0, 0.6); }

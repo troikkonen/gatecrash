@@ -110,7 +110,7 @@ function drawTelegraphs(){
 }
 function drawBoss(dt){
   const b = G.boss; poolBegin(pools.boss);
-  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0.05, b.z); it.obj.scale.setScalar(pools.boss.mutant ? b.scale*1.35 : b.scale); it.obj.rotation.set(0, 0, 0);
+  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0.05, b.z); it.obj.scale.setScalar(pools.boss.mutant ? b.scale*1.7 : b.scale*1.3); it.obj.rotation.set(0, 0, 0);
     if (!pools.boss.mutant) it.obj.traverse(o => { if (o.isMesh && o.material.color) o.material.color.lerp(new THREE.Color(b.def.color), 0.15); });
     else it.obj.traverse(o => { if (o.isMesh && o.material.emissive){ o.material.emissive.set(b.def.color); o.material.emissiveIntensity = b.flash > 0 ? 0.6 : 0.18; } });
     flash(it, b.flash > 0);
