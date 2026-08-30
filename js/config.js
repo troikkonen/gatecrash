@@ -57,7 +57,7 @@ function difficulty(L){
     waveGap:     Math.max(1.0, 2.4 - L*0.05),
     waveSize:    Math.min(40, Math.round(12 * Math.pow(1.06, L-1))),   // big blocks: you chew the front rank while the rest keeps coming
     speedMult:   1 + (L-1)*0.018,
-    bruteChance: Math.min(0.3, 0.04 + L*0.01),
+    bruteChance: 0,                                       // one zombie type only
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
     startWeapon: Math.min(3, world-1),
     plusValue:   1 + Math.floor((L-1)/8),                 // left-lane gate value: +1, then +2 from level 9, +3 from 17...

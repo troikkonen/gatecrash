@@ -12,7 +12,7 @@ const PROPS = {};
   PROPS.gates = Array.from({length: 24}, () => {
     const g = new THREE.Group();
     for (const s of [-1, 1]){ const p = new THREE.Mesh(postGeo, postMat); p.position.x = s*(CFG.laneW/2 - 0.22); p.castShadow = true; g.add(p); const c = new THREE.Mesh(capGeo, capMat); c.position.x = p.position.x; g.add(c); }
-    const panel = new THREE.Mesh(panelGeo, new THREE.MeshStandardMaterial({ color: 0x4fc3ff, emissive: 0x4fc3ff, emissiveIntensity: 1.1, roughness: 0.3, metalness: 0.2, transparent: true, opacity: 0.92 })); panel.castShadow = true; g.add(panel);
+    const panel = new THREE.Mesh(panelGeo, new THREE.MeshStandardMaterial({ color: 0x1a6fe0, emissive: 0x1a6fe0, emissiveIntensity: 0.35, roughness: 0.5, metalness: 0.1, transparent: true, opacity: 0.95, toneMapped: false })); panel.castShadow = true; g.add(panel);
     const label = new THREE.Sprite(new THREE.SpriteMaterial({ depthTest: false, transparent: true })); label.position.set(0, 0.95, 0.1); g.add(label);
     g.visible = false; scene.add(g); return { g, panel, label };
   });
@@ -20,8 +20,8 @@ const PROPS = {};
 function drawGate(slot, gate){
   const { g, panel, label } = slot;
   g.position.set(laneX(gate.lane), 0.05 + (gate.fall ? -gate.fall*4 : 0), gate.z); g.visible = true;
-  const col = gate.flash > 0 ? '#ffffff' : gate.type === 'mul' ? '#d58cff' : '#4fc3ff';   // blue = plus, purple = multiply
-  panel.material.color.set(col); panel.material.emissive.set(col); panel.material.opacity = gate.used ? 0.3 : 0.92;
+  const col = gate.flash > 0 ? '#ffffff' : gate.type === 'mul' ? '#6a1fc9' : '#0d4fc4';   // blue = plus, purple = multiply (deep tones so bloom doesn't wash them out)
+  panel.material.color.set(col); panel.material.emissive.set(col); panel.material.emissiveIntensity = gate.flash > 0 ? 1.2 : 0.22; panel.material.opacity = gate.used ? 0.3 : 0.92;
   label.visible = !gate.used;
   if (label.visible){ const tx = textTex(gateLabel(gate), '#ffffff', 72); label.material.map = tx; label.material.needsUpdate = true; label.scale.set(0.9*tx.image.width/tx.image.height, 0.9, 1); }
 }
