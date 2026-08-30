@@ -49,5 +49,5 @@ function frame(now){
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
-charactersLoaded.then(ok => { $('titleBest').textContent = ok ? 'Drag to move. Everything else is automatic.' : 'Models failed to load — check the connection.'; $('playBtn').disabled = !ok; });
+charactersLoaded.then(ok => { if (ok) uiTitleInfo(); else $('titleBest').textContent = 'Models failed to load — check the connection.'; $('playBtn').disabled = !ok; });
 requestAnimationFrame(frame);

@@ -22,7 +22,12 @@ canvas { display:block; width:100vw; height:100vh; }
 #title { display:flex; background:radial-gradient(ellipse at 50% 30%, rgba(60,80,110,.6), rgba(5,8,14,.94) 70%); gap:6px; }
 #title h1 { margin:0; font:900 54px/1 inherit; letter-spacing:.06em; color:#ffd447; text-shadow:0 4px 0 #7a5a00, 0 10px 30px rgba(0,0,0,.6); }
 #title .sub { font:700 13px inherit; letter-spacing:.3em; color:#4fc3ff; margin-bottom:22px; }
-#title img { height:120px; filter:drop-shadow(0 10px 20px rgba(0,0,0,.6)); margin-bottom:10px; }
+#titleArt { position:relative; height:200px; width:280px; margin-bottom:6px; }
+#titleArt img { position:absolute; bottom:0; filter:drop-shadow(0 10px 20px rgba(0,0,0,.6)); }
+#titleArt #titleImg { left:20px; height:130px; z-index:2; }
+#titleArt .boss { right:0; height:200px; opacity:.9; }
+#title h1 { animation: titleIn .6s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes titleIn { from { transform: translateY(20px) scale(.9); opacity:0 } to { transform:none; opacity:1 } }
 #title button { font-size:20px; padding:16px 44px; margin-top:6px; }
 
 #mute { position:fixed; right:14px; bottom:calc(14px + env(safe-area-inset-bottom, 0)); width:44px; height:44px; border-radius:22px; border:0; background:rgba(5,8,14,.55); color:#eaf2ff; font:700 18px inherit; }

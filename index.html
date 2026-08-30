@@ -8,6 +8,9 @@
 <meta name="theme-color" content="#0b0d12">
 <title>Gatecrash: Hold the Lane</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -28,11 +31,12 @@
 <div id="tip">Grow in the left lane. Bridge the gaps. Then hold the middle and bring the boss down — that is the only way out.</div>
 
 <div id="title" class="panel">
-  <img id="titleImg" src="assets/soldier.png" alt="">
+  <div id="titleArt"><img class="boss" id="titleBoss" src="assets/warden.png" alt=""><img id="titleImg" src="assets/soldier.png" alt=""></div>
   <h1>GATECRASH</h1>
   <div class="sub">HOLD THE LANE</div>
   <small id="titleBest">Loading…</small>
   <button id="playBtn" disabled>Play</button>
+  <button class="ghost" id="levelsBtn">Levels</button>
 </div>
 <button id="mute">🔊</button>
 

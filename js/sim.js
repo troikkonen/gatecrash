@@ -128,8 +128,7 @@ function bossUpdate(dt){
     const lineZ = CFG.squadZ - 2.6; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 20)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
     b.atLine = b.targetZ >= lineZ - 0.2;
     b.attackTimer -= dt;
-    if (b.attackTimer <= 0){ const p = b.def.patterns; bossAttack(p[Math.floor(Math.random()*p.length)]); b.attackTimer = (b.atLine ? b.cooldown*0.5 : b.cooldown) + rand(0, 0.6); }
-    if (!b.busy && b.z > CFG.squadZ - 3 && laneOfX(S.x) === MID){ b.crush -= dt; if (b.crush <= 0){ b.crush = 0.6; loseTroops(3 + D.world*2, S.x, CFG.squadZ - 1); } }
+    if (b.attackTimer <= 0){ const p = b.def.patterns; bossAttack(p[Math.floor(Math.random()*p.length)]); b.attackTimer = (b.atLine ? b.cooldown*0.6 : b.cooldown) + rand(0, 0.6); }
     const step = Math.floor(G.elapsed*2.2); if (step !== b.lastStep){ b.lastStep = step; kick(1.2); dust(b.x + (step%2 ? -0.6 : 0.6), b.z + 0.5, 3); }
   }
   // telegraphs land
@@ -163,7 +162,7 @@ function levelWon(){
   G.dead = true; G.won = true; SFX.win();
   const strong = G.squad.n >= 40 + G.level*3, stars = 1 + (G.squad.n >= 20 ? 1 : 0) + (strong ? 1 : 0);
   SAVE.stars[G.level] = Math.max(SAVE.stars[G.level] || 0, stars); SAVE.level = Math.max(SAVE.level, Math.min(TOTAL_LEVELS, G.level + 1)); persist();
-  uiWin(stars, strong);
+  uiWin(stars, strong); uiTitleInfo();
 }
 
 // ---------- waves: marching blocks in the middle lane ----------
@@ -276,7 +275,7 @@ function update(dt){
   }
   // contact
   for (const e of G.enemies){ if (e.dead) continue;
-    if (e.z > CFG.squadZ - 0.8 && Math.abs(e.x - S.x) < S.radius + ENEMY[e.kind].radius){ e.dead = true; if (G.mech > 0){ killEnemy(e); kick(2); } else loseTroops(ENEMY[e.kind].hit, e.x, e.z); }
+    if (e.z > CFG.squadZ - 0.8 && laneOfX(S.x) === MID && Math.abs(e.x - S.x) < S.radius + ENEMY[e.kind].radius){ e.dead = true; if (G.mech > 0){ killEnemy(e); kick(2); } else loseTroops(ENEMY[e.kind].hit, e.x, e.z); }
     if (e.z > CFG.road.near) e.dead = true; }
   G.enemies = G.enemies.filter(e => !e.dead);
   for (const c of G.corpses){ c.x += c.vx*dt; c.y += c.vy*dt; c.z += c.vz*dt; c.vy -= 18*dt; c.rot += c.vr*dt; c.life -= dt; }

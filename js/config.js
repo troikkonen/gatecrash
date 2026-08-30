@@ -55,7 +55,7 @@ function difficulty(L){
     world,
     prep:        22 + L*1.5,                              // seconds before the boss steps on
     waveGap:     Math.max(1.0, 2.4 - L*0.05),
-    waveSize:    Math.round(12 * Math.pow(1.08, L-1)),   // big blocks: you chew the front rank while the rest keeps coming
+    waveSize:    Math.min(40, Math.round(12 * Math.pow(1.06, L-1))),   // big blocks: you chew the front rank while the rest keeps coming
     speedMult:   1 + (L-1)*0.023,
     bruteChance: Math.min(0.3, 0.04 + L*0.01),
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
@@ -67,7 +67,7 @@ function difficulty(L){
     rightBoards: 8,  rightHits: Math.round(9 * Math.pow(1.07, L-1)),
     weaponGap:   8, rockGap: 15,
     rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
-    bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.7, world-1)) : Math.round(260 * Math.pow(1.18, L-1)),
+    bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.5, world-1)) : Math.round(200 * Math.pow(1.10, L-1)),
     bossAdvance: Math.max(22, 40 - L),                    // seconds for the boss to walk down to your line
     telegraph:   Math.max(0.6, 1.05 - world*0.06),        // warning time before an attack lands
   };
