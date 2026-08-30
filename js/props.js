@@ -87,6 +87,42 @@ function drawCrate(slot, it){
 PROPS.shield = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 48), new THREE.MeshBasicMaterial({ color: 0x7dffea, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
 PROPS.shield.rotation.x = -Math.PI/2; PROPS.shield.visible = false; scene.add(PROPS.shield);
 
+// ---------- boss attack telegraphs ----------
+(function telegraphs(){
+  PROPS.laneWarn = [0,1,2].map(l => { const m = new THREE.Mesh(new THREE.PlaneGeometry(CFG.laneW, 30), new THREE.MeshBasicMaterial({ color: 0xff3c3c, transparent: true, opacity: 0.4, depthWrite: false })); m.rotation.x = -Math.PI/2; m.position.set(laneX(l), 0.03, -12); m.visible = false; scene.add(m); return m; });
+  PROPS.beam = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 30), new THREE.MeshBasicMaterial({ color: 0xff5a3c, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); PROPS.beam.visible = false; scene.add(PROPS.beam);
+  PROPS.rings = Array.from({length: 6}, () => { const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 40), new THREE.MeshBasicMaterial({ color: 0xffc850, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.rotation.x = -Math.PI/2; m.visible = false; scene.add(m); return m; });
+  PROPS.fallRock = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 1), new THREE.MeshLambertMaterial({ color: 0x7a705f, flatShading: true })); PROPS.fallRock.castShadow = true; PROPS.fallRock.visible = false; scene.add(PROPS.fallRock);
+  PROPS.bossLight = new THREE.PointLight(0xff4444, 0, 16, 2); scene.add(PROPS.bossLight);
+})();
+function drawTelegraphs(){
+  const S = G.squad, b = G.boss, t = performance.now()/1000;
+  PROPS.laneWarn.forEach(m => m.visible = false); PROPS.beam.visible = false; PROPS.rings.forEach(r => r.visible = false); PROPS.fallRock.visible = false;
+  let ri = 0;
+  for (const tg of G.telegraphs){
+    if (tg.kind === 'lane'){ const m = PROPS.laneWarn[tg.lane]; m.visible = true; m.material.opacity = tg.t > 0 ? 0.22 + 0.15*Math.sin(t*30) : 0.6; if (b){ m.position.z = (b.z + CFG.road.near)/2; m.scale.y = (CFG.road.near - b.z)/30; } }
+    if (tg.kind === 'rock'){ const r = PROPS.rings[ri++]; if (r){ r.visible = true; r.position.set(tg.x, 0.04, CFG.squadZ); r.scale.set(tg.r, tg.r, 1); r.material.color.set(tg.t > 0 ? 0xffc850 : 0xffffff); r.material.opacity = 0.9; }
+      if (tg.t > 0){ PROPS.fallRock.visible = true; PROPS.fallRock.position.set(tg.x, Math.max(0.3, tg.t*7), CFG.squadZ); } }
+    if (tg.kind === 'beam' && b){ PROPS.beam.visible = true; PROPS.beam.position.set(tg.x, 0.15, (b.z + CFG.road.near)/2); PROPS.beam.scale.set(tg.t <= 0 ? 1 : 0.35, 1, (CFG.road.near - b.z)/30); PROPS.beam.material.opacity = tg.t <= 0 ? 0.85 : 0.3; }
+  }
+  if (b && b.phase !== 'dying'){ PROPS.bossLight.position.set(b.x, 1.8, b.z + 0.5); PROPS.bossLight.color.set(b.def.color); PROPS.bossLight.intensity = 1.6 + 0.4*Math.sin(t*3); FX.glows.push({ x: b.x, z: b.z, r: 2.2, color: b.def.color, life: 0.01, max: 1 }); }
+  else PROPS.bossLight.intensity = 0;
+}
+function drawBoss(dt){
+  const b = G.boss; poolBegin(pools.boss);
+  if (b){ const it = poolTake(pools.boss); it.obj.position.set(b.x, 0, b.z); it.obj.scale.setScalar(b.scale); it.obj.rotation.set(0, 0, 0);
+    it.obj.traverse(o => { if (o.isMesh && o.material.color) o.material.color.lerp(new THREE.Color(b.def.color), 0.15); });
+    flash(it, b.flash > 0);
+    if (b.phase === 'dying') play(it, 'Death', { once: true });
+    else if (b.anim && b.anim.kind === 'swing') play(it, 'Punch', { once: true, speed: 1.2/b.anim.dur });
+    else if (b.busy && b.busy.kind === 'charge') play(it, 'Running', { speed: 1.6 });
+    else if (b.phase === 'enter' || !b.atLine) play(it, 'Walking', { speed: 0.9 });
+    else play(it, 'Idle');
+    if (b.phase !== 'dying'){ FX.texts.push({ x: b.x, z: b.z, y: 4.4*b.scale + 0.6, str: String(b.hp), color: '#fff', size: 0.75, life: 0.01 });
+      FX.texts.push({ x: b.x, z: b.z, y: 4.4*b.scale + 0.1, str: '▮'.repeat(Math.max(1, Math.round(20*b.hp/b.maxHp))), color: '#ff4d4d', size: 0.3, life: 0.01 }); } }
+  poolEnd(pools.boss, dt);
+}
+
 function drawProps(){
   let gi = 0; for (const g of G.gates){ if (gi < PROPS.gates.length) drawGate(PROPS.gates[gi++], g); }
   for (; gi < PROPS.gates.length; gi++) PROPS.gates[gi].g.visible = false;

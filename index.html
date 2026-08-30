@@ -15,12 +15,17 @@
 <div id="hud">
   <div id="row">
     <div>SQUAD<b id="squad">0</b></div>
-    <div id="lvl"><span>LEVEL</span><b id="level">1</b></div>
+    <div id="lvl" style="pointer-events:auto">LEVEL<b id="level">1</b><small>tap to change</small></div>
     <div id="wpn">WEAPON<img id="wpnI" alt=""><b id="wpnV">Pistol</b></div>
   </div>
   <div id="bar"><div id="fill"></div></div>
+  <div id="bossName"></div>
 </div>
-<div id="tip">Grow in the left lane. Shoot the gaps to lay boards. Bullets through an x2 gate come out doubled.</div>
+<div id="intro"><img alt=""><div class="k"></div><div class="n"></div><div class="t"></div></div>
+<div id="picker" class="panel"><div>Pick a level</div><div id="pick"></div><button class="ghost" onclick="closePicker()">Cancel</button></div>
+<div id="win" class="panel"><div class="stars" id="stars"></div><div id="winT">Level cleared</div><small id="winS"></small><button onclick="nextLevel()">Next level</button><button class="ghost" onclick="openPicker()">Pick a level</button></div>
+<div id="over" class="panel"><div>Squad wiped out</div><small id="overS"></small><button onclick="retryLevel()">Retry level</button><button class="ghost" onclick="openPicker()">Pick a level</button></div>
+<div id="tip">Grow in the left lane. Bridge the gaps. Then hold the middle and bring the boss down — that is the only way out.</div>
 
 <div id="title" class="panel">
   <img id="titleImg" src="assets/soldier.png" alt="">

@@ -26,3 +26,18 @@ canvas { display:block; width:100vw; height:100vh; }
 #title button { font-size:20px; padding:16px 44px; margin-top:6px; }
 
 #mute { position:fixed; right:14px; bottom:calc(14px + env(safe-area-inset-bottom, 0)); width:44px; height:44px; border-radius:22px; border:0; background:rgba(5,8,14,.55); color:#eaf2ff; font:700 18px inherit; }
+
+#lvl small { display:block; font-size:10px; color:#9fb3c8; margin-top:4px; }
+#bossName { text-align:center; font:800 12px/1 inherit; letter-spacing:.12em; color:#ff8a8a; margin-top:8px; display:none; }
+#pick { display:none; flex-wrap:wrap; gap:10px; row-gap:20px; justify-content:center; max-width:320px; }
+#pick button { padding:12px 0; width:52px; font-size:16px; position:relative; }
+#pick button.locked { background:#2a3140; color:#5b6678; }
+#pick button s { position:absolute; left:0; right:0; bottom:-14px; font-size:9px; color:#ffd447; text-decoration:none; letter-spacing:.05em; }
+.stars { font-size:44px; letter-spacing:.1em; line-height:1; margin-bottom:4px; }
+.stars i { font-style:normal; color:#2a3140; } .stars i.on { color:#ffd447; text-shadow:0 0 18px rgba(255,212,71,.6); }
+#intro { position:fixed; inset:0; pointer-events:none; opacity:0; display:none; background:radial-gradient(ellipse at 60% 45%, rgba(40,50,70,.3), rgba(5,8,14,.75) 70%); }
+#intro.on { display:block; }
+#intro img { position:absolute; right:-6%; top:14%; height:62%; transform:translateX(calc((1 - var(--p, 0)) * 80vw)); filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)); }
+#intro .k { position:absolute; left:18px; top:62%; font:800 13px/1 inherit; letter-spacing:.3em; color:#eaf2ff; text-shadow:0 2px 6px #000; transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }
+#intro .n { position:absolute; left:18px; top:65%; font:900 44px/1 inherit; color:#ff4d4d; text-shadow:0 3px 0 #5a0000, 0 8px 24px rgba(0,0,0,.7); transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }
+#intro .t { position:absolute; left:18px; top:72%; font:700 13px/1 inherit; color:#9fb3c8; text-shadow:0 2px 6px #000; transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }

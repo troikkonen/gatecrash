@@ -8,9 +8,13 @@ const G = {                     // game state
   weapon: 0, recoil: 0, fireTimer: 0, waveTimer: 1.5, scroll: 0,
   bullets: [], enemies: [], corpses: [], blockSeq: 0,
   gates: [], items: [], gaps: [], timers: {}, shield: 0, mech: 0, rightOpen: 0,
+  boss: null, telegraphs: [], intro: 0, won: false, score: 0,
 };
 const gateLabel = g => g.type === 'mul' ? 'x' + g.value : '+' + g.value;
 const rand = (a,b) => a + Math.random()*(b-a);
+const SAVE = Object.assign({ level: 1, stars: {} }, JSON.parse(localStorage.getItem('gc_save') || '{}'));
+function persist(){ localStorage.setItem('gc_save', JSON.stringify(SAVE)); }
+G.level = Math.min(TOTAL_LEVELS, SAVE.level);
 
 function startLevel(L){
   G.level = L; G.D = difficulty(L); G.elapsed = 0; G.dead = false;
@@ -19,6 +23,7 @@ function startLevel(L){
   G.bullets = []; G.enemies = []; G.corpses = []; G.gates = []; G.items = []; G.shield = 0; G.mech = 0; G.rightOpen = 0;
   G.gaps = [ makeGap(LEFT, G.D.leftBoards, G.D.leftHits), makeGap(RIGHT, G.D.rightBoards, G.D.rightHits) ];
   G.timers = { plus: 1.0, mul: 4, weapon: 6, rock: 9, jackpot: 0, mech: 0 };
+  G.boss = null; G.telegraphs = []; G.intro = 0; G.won = false; G.score = 0; G.bossDone = false; G.run = (G.run || 0) + 1;
   FX.particles = []; FX.smoke = []; FX.decals = []; FX.texts = []; FX.glows = [];
   uiLevel(L); uiWeapon();
 }
@@ -41,7 +46,7 @@ function loseTroops(k, x, z){
   if (G.squad.n <= 0){ G.squad.n = 0; gameOver(); }
 }
 function killEnemy(e){
-  e.dead = true; burst(e.x, e.z, ENEMY[e.kind].color, 4, 0.6); sparks(e.x, e.z, 5); decal(e.x, e.z, 'blood', 0.5 + ENEMY[e.kind].hit*0.2); SFX.kill();
+  e.dead = true; G.score += ENEMY[e.kind].hit; burst(e.x, e.z, ENEMY[e.kind].color, 4, 0.6); sparks(e.x, e.z, 5); decal(e.x, e.z, 'blood', 0.5 + ENEMY[e.kind].hit*0.2); SFX.kill();
   G.corpses.push({ kind: e.kind, x: e.x, z: e.z, y: 0, vx: rand(-2,2), vy: rand(4,7), vz: rand(2,5), rot: 0, vr: rand(-6,6), life: 0.8 });
 }
 
@@ -89,6 +94,76 @@ function collectCrate(it){
   it.dead = true; SFX.pickup(); const S = G.squad;
   if (it.mech){ G.mech = 30; floatText(S.x, CFG.squadZ - 1.5, 'MECH SUIT', '#b6ff7d', 1); burst(S.x, CFG.squadZ - 1, '#b6ff7d', 16, 0.6); return; }
   setWeapon(it.gun); floatText(S.x, CFG.squadZ - 1.5, WEAPONS[it.gun].name.toUpperCase(), '#ffd447', 0.9); burst(S.x, CFG.squadZ - 1, '#ffd447', 14, 0.6);
+}
+
+// ---------- boss ----------
+function spawnBoss(){
+  const D = G.D, named = G.level % 5 === 0, def = named ? BOSSES[D.world-1] : CAPTAIN;
+  G.boss = { def, named, hp: D.bossHp, maxHp: D.bossHp, x: 0, z: CFG.spawnZ - 6, targetZ: -20, phase: 'enter', attackTimer: 3, cooldown: named ? Math.max(1.6, 3.4 - D.world*0.3) : 3.6,
+    hitCost: (named ? 10 : 5) + D.world*4, flash: 0, anim: null, busy: null, crush: 0, scale: named ? 0.95 + D.world*0.08 : 0.8, dmgAcc: 0, dmgT: 0 };
+  G.intro = 2.6; SFX.roar(); kick(10); uiBossName(def.name);
+}
+function bossAttack(kind){
+  const b = G.boss, tele = G.D.telegraph, lane = laneOfX(G.squad.x);
+  if (kind === 'slam' || kind === 'barrage' || kind === 'rocks') b.anim = { kind: 'swing', t: 0, dur: tele + 0.35 };
+  if (kind === 'slam') G.telegraphs.push({ kind: 'lane', lane, t: tele, hit: 0.3, cost: b.hitCost });
+  if (kind === 'barrage'){ const o = (lane + 1 + Math.floor(Math.random()*2)) % 3; for (const l of [lane, o]) G.telegraphs.push({ kind: 'lane', lane: l, t: tele, hit: 0.3, cost: b.hitCost }); }
+  if (kind === 'sweep'){ const dir = Math.random() < 0.5 ? 1 : -1; G.telegraphs.push({ kind: 'beam', x: -dir*CFG.road.width/2, dir, t: tele*0.6, dur: 2.2, cost: 3, tick: 0 }); }
+  if (kind === 'rocks'){ for (let i=0;i<3;i++) G.telegraphs.push({ kind: 'rock', x: rand(-3.2, 3.2), t: tele + i*0.25, hit: 0.25, cost: 7 + G.D.world*2, r: 1.1 }); }
+  if (kind === 'charge') b.busy = { kind: 'charge', lane, t: 0, phase: 'wind', dur: tele };
+}
+function bossUpdate(dt){
+  const b = G.boss, S = G.squad, D = G.D;
+  if (b.flash > 0) b.flash -= dt;
+  if (b.anim){ b.anim.t += dt; if (b.anim.t > b.anim.dur) b.anim = null; }
+  if (b.phase === 'dying'){ b.dieT += dt; if (b.dieT > 1.3) bossFinish(); return; }
+  if (b.phase === 'enter'){ b.z += (b.targetZ - b.z)*Math.min(1, dt*1.4); if (b.targetZ - b.z < 0.3) b.phase = 'fight'; }
+  if (b.busy && b.busy.kind === 'charge'){
+    const c = b.busy; c.t += dt; const cx = laneX(c.lane);
+    if (c.phase === 'wind'){ b.x += (cx - b.x)*Math.min(1, dt*6); if (c.t > c.dur){ c.phase = 'go'; c.t = 0; } }
+    else if (c.phase === 'go'){ b.z += dt*40; dust(b.x, b.z + 1, 3); if (b.z >= CFG.squadZ - 1.5){ b.z = CFG.squadZ - 1.5; if (laneOfX(S.x) === c.lane) loseTroops(b.hitCost + 8, S.x, CFG.squadZ - 1); burst(b.x, b.z, '#ffffff', 16, 0.8); kick(8); c.phase = 'back'; } }
+    else { b.z -= dt*18; if (b.z <= b.targetZ){ b.z = b.targetZ; b.busy = null; b.attackTimer = b.cooldown; } }
+  } else if (b.phase === 'fight'){
+    b.x += (Math.sin(G.elapsed*0.7)*0.6 - b.x)*Math.min(1, dt*1.5);                     // paces inside the middle lane
+    const lineZ = CFG.squadZ - 2.6; if (b.targetZ < lineZ){ b.targetZ += dt*(lineZ + 20)/D.bossAdvance; b.z += (b.targetZ - b.z)*Math.min(1, dt*3); }
+    b.atLine = b.targetZ >= lineZ - 0.2;
+    b.attackTimer -= dt;
+    if (b.attackTimer <= 0){ const p = b.def.patterns; bossAttack(p[Math.floor(Math.random()*p.length)]); b.attackTimer = (b.atLine ? b.cooldown*0.5 : b.cooldown) + rand(0, 0.6); }
+    if (!b.busy && b.z > CFG.squadZ - 3 && laneOfX(S.x) === MID){ b.crush -= dt; if (b.crush <= 0){ b.crush = 0.6; loseTroops(3 + D.world*2, S.x, CFG.squadZ - 1); } }
+    const step = Math.floor(G.elapsed*2.2); if (step !== b.lastStep){ b.lastStep = step; kick(1.2); dust(b.x + (step%2 ? -0.6 : 0.6), b.z + 0.5, 3); }
+  }
+  // telegraphs land
+  for (const t of G.telegraphs){
+    t.t -= dt;
+    if (t.kind === 'beam'){ if (t.t <= 0){ t.dur -= dt; t.x += t.dir*dt*CFG.road.width/2.2; t.tick -= dt;
+      if (t.tick <= 0 && Math.abs(t.x - S.x) < S.radius + 0.35){ t.tick = 0.2; loseTroops(t.cost, S.x, CFG.squadZ - 1); }
+      if (t.dur <= 0 || Math.abs(t.x) > CFG.road.width/2 + 0.5) t.dead = true; } }
+    else if (t.t <= 0){
+      if (!t.fired){ t.fired = true; SFX.slam(); kick(t.kind === 'lane' ? 10 : 6);
+        if (t.kind === 'lane'){ const x = laneX(t.lane); if (laneOfX(S.x) === t.lane) loseTroops(t.cost, S.x, CFG.squadZ - 1); decal(x, CFG.squadZ, 'crack', 1.1); dust(x, CFG.squadZ, 10); FX.glows.push({ x, z: CFG.squadZ, r: 1.6, color: '#ff4d4d', life: 0.3, max: 0.3 }); }
+        if (t.kind === 'rock'){ if (Math.abs(t.x - S.x) < S.radius + t.r*0.6) loseTroops(t.cost, t.x, CFG.squadZ - 1); decal(t.x, CFG.squadZ, 'crack', 0.8); dust(t.x, CFG.squadZ, 8); burst(t.x, CFG.squadZ, '#a89f8c', 12, 0.4); } }
+      t.hit -= dt; if (t.hit <= 0) t.dead = true; }
+  }
+  G.telegraphs = G.telegraphs.filter(t => !t.dead);
+  // bullets vs boss
+  for (const bl of G.bullets){ if (bl.dead) continue;
+    if (Math.abs(bl.x - b.x) < 1.1*b.scale && bl.z < b.z + 0.8 && bl.z > b.z - 1.2){ b.hp -= bl.dmg; b.flash = 0.06; bl.dead = true; b.dmgAcc += bl.dmg; sparks(bl.x, bl.z, 2, 1.2);
+      if (bl.splash) explode(bl.x, bl.z, bl.splash*0.8, bl.color);
+      if (b.hp <= 0){ b.hp = 0; bossDead(); break; } } }
+  b.dmgT -= dt; if (b.dmgAcc > 0 && b.dmgT <= 0){ floatText(b.x, b.z, '-' + b.dmgAcc, '#fff3a0', 0.6, 2.6); b.dmgAcc = 0; b.dmgT = 0.18; }
+}
+function bossDead(){ const b = G.boss; b.phase = 'dying'; b.dieT = 0; b.busy = null; b.anim = null; G.telegraphs = []; kick(8); SFX.hurt(); }
+function bossFinish(){
+  const b = G.boss, run0 = G.run; G.score += b.maxHp;
+  for (let i=0;i<6;i++) setTimeout(() => G.run === run0 && explode(b.x + rand(-1,1), b.z + rand(-1,1), 1.2, i%2 ? '#ffd447' : '#ff6b6b'), i*120);
+  floatText(b.x, b.z, b.def.name + ' DOWN', '#ffd447', 0.9, 2.2); SFX.bossDown(); kick(16);
+  G.boss = null; uiBossName(null); const run = G.run; setTimeout(() => { if (!G.dead && G.run === run) levelWon(); }, 1600);
+}
+function levelWon(){
+  G.dead = true; G.won = true; SFX.win();
+  const strong = G.squad.n >= 40 + G.level*3, stars = 1 + (G.squad.n >= 20 ? 1 : 0) + (strong ? 1 : 0);
+  SAVE.stars[G.level] = Math.max(SAVE.stars[G.level] || 0, stars); SAVE.level = Math.max(SAVE.level, Math.min(TOTAL_LEVELS, G.level + 1)); persist();
+  uiWin(stars, strong);
 }
 
 // ---------- waves: marching blocks in the middle lane ----------
@@ -182,8 +257,12 @@ function update(dt){
   G.items = G.items.filter(it => !it.dead);
   G.bullets = G.bullets.filter(b => !b.dead);
 
+  // the prep run, then the boss; the level ends only when it dies
+  if (G.elapsed >= D.prep && !G.boss && !G.bossDone){ G.bossDone = true; spawnBoss(); }
+  if (G.boss) bossUpdate(dt);
+  uiProgress(G.boss ? G.boss.hp/G.boss.maxHp : Math.min(1, G.elapsed/D.prep), !!G.boss);
   // waves
-  G.waveTimer -= dt; if (G.waveTimer <= 0){ G.waveTimer = D.waveGap; spawnWave(); }
+  G.waveTimer -= dt; if (G.waveTimer <= 0){ G.waveTimer = D.waveGap*(G.boss ? 1.5 : 1); spawnWave(); }
   for (const e of G.enemies){ e.z += e.speed*dt; if (Math.random() < 0.02) dust(e.x, e.z + 0.2, 1); }
   // bullets vs enemies
   for (const b of G.bullets){ if (b.dead) continue;
@@ -206,4 +285,4 @@ function update(dt){
   fxUpdate(dt, CFG.conveyor*D.speedMult);
   uiSquad(S.n);
 }
-function gameOver(){ if (G.dead) return; G.dead = true; SFX.lose(); uiGameOver(); }
+function gameOver(){ if (G.dead) return; G.dead = true; SFX.lose(); uiGameOver(G.boss ? G.boss.def.name + ' had ' + G.boss.hp + ' HP left' : ''); }

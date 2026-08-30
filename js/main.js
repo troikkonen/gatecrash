@@ -35,13 +35,15 @@ function drawCharacters(dt){
 }
 
 function frame(now){
-  const dt = Math.min(0.033, (now - lastT)/1000); lastT = now;
+  let dt = Math.min(0.033, (now - lastT)/1000); lastT = now;
+  if (G.intro > 0){ G.intro -= dt; dt *= 0.12; }
   const run = !G.paused && !G.dead;
   if (run) update(dt);
   const S = G.squad, w = WEAPONS[G.weapon];
   muzzleLight.position.set(S.x, 1.1, CFG.squadZ - 0.8); muzzleLight.color.set(w.color); muzzleLight.intensity = G.recoil*2.2;
   drawCharacters(run ? dt : 0);
-  drawProps();
+  drawProps(); drawTelegraphs(); if (charactersReady) drawBoss(run ? dt : 0);
+  uiIntro();
   fxDraw(G.bullets);
   worldUpdate(dt, now/1000, G.scroll);
   renderer.render(scene, camera);

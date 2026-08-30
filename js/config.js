@@ -35,6 +35,20 @@ const ENEMY = {
   brute:  { speed: 7.0, hit: 3, scale: 1.0,  color: '#8a1414', anim: 'walk', radius: 0.7 },
 };
 
+// Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.
+//  slam: your lane gets crushed · sweep: a beam walks across the road · rocks: boulders land on marked circles
+//  charge: it rushes down your lane and back · barrage: two lanes at once
+const BOSSES = [
+  { name:'THE WARDEN',   img:'warden',    color:'#8a1c1c', patterns:['slam'] },
+  { name:'SCRAPJAW',     img:'scrapjaw',  color:'#5b3a8a', patterns:['slam','sweep'] },
+  { name:'STONEFIST',    img:'stonefist', color:'#5e5240', patterns:['slam','sweep','rocks'] },
+  { name:'FROSTBITE',    img:'frostbite', color:'#2f6f8a', patterns:['sweep','rocks','charge'] },
+  { name:'HELLBRAND',    img:'hellbrand', color:'#b3400f', patterns:['slam','rocks','charge','barrage'] },
+  { name:'THE PROTOCOL', img:'protocol',  color:'#1f1f2b', patterns:['slam','sweep','rocks','charge','barrage'] },
+];
+const CAPTAIN = { name:'CAPTAIN', img:'captain', color:'#9c3b2e', patterns:['slam'] };
+const TOTAL_LEVELS = 30;
+
 function difficulty(L){
   const world = Math.ceil(L/5);
   return {
@@ -53,5 +67,8 @@ function difficulty(L){
     rightBoards: 8,  rightHits: Math.round(9 * Math.pow(1.07, L-1)),
     weaponGap:   8, rockGap: 15,
     rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
+    bossHp:      L % 5 === 0 ? Math.round(420 * Math.pow(1.7, world-1)) : Math.round(260 * Math.pow(1.18, L-1)),
+    bossAdvance: Math.max(22, 40 - L),                    // seconds for the boss to walk down to your line
+    telegraph:   Math.max(0.6, 1.05 - world*0.06),        // warning time before an attack lands
   };
 }
