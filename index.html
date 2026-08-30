@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d12">
+<title>Gatecrash: Hold the Lane</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div id="row">
+    <div>SQUAD<b id="squad">0</b></div>
+    <div id="lvl"><span>LEVEL</span><b id="level">1</b></div>
+    <div id="wpn">WEAPON<img id="wpnI" alt=""><b id="wpnV">Pistol</b></div>
+  </div>
+  <div id="bar"><div id="fill"></div></div>
+</div>
+<div id="tip">Drag anywhere to move. Your squad fires on its own.</div>
+
+<div id="title" class="panel">
+  <img id="titleImg" src="assets/soldier.png" alt="">
+  <h1>GATECRASH</h1>
+  <div class="sub">HOLD THE LANE</div>
+  <small id="titleBest">Loading…</small>
+  <button id="playBtn" disabled>Play</button>
+</div>
+<button id="mute">🔊</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="js/config.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/world.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
