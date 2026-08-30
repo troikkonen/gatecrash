@@ -47,7 +47,7 @@ function loseTroops(k, x, z){
 }
 function killEnemy(e){
   e.dead = true; G.score += ENEMY[e.kind].hit; burst(e.x, e.z, ENEMY[e.kind].color, 4, 0.6); sparks(e.x, e.z, 5); decal(e.x, e.z, 'blood', 0.5 + ENEMY[e.kind].hit*0.2); SFX.kill();
-  G.corpses.push({ kind: e.kind, x: e.x, z: e.z, y: 0, vx: rand(-2,2), vy: rand(4,7), vz: rand(2,5), rot: 0, vr: rand(-6,6), life: 0.8 });
+  G.corpses.push({ kind: e.kind, x: e.x, z: e.z, x0: e.x, z0: e.z, y: 0, vx: rand(-2,2), vy: rand(4,7), vz: rand(2,5), rot: 0, vr: rand(-6,6), life: 1.6 });
 }
 
 // ---------- gates: each lane has one job ----------

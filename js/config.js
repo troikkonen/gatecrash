@@ -30,9 +30,9 @@ const WEAPONS = [
 
 // Every regular enemy dies to one bullet. Speeds in units/s, "hit" is what it costs you if it reaches the squad.
 const ENEMY = {
-  grunt:  { speed: 9.5, hit: 1, scale: 0.62, color: '#d52a2a', anim: 'run',  radius: 0.45 },
-  runner: { speed: 15.0, hit: 1, scale: 0.55, color: '#ff7a2a', anim: 'run',  radius: 0.4 },
-  brute:  { speed: 7.0, hit: 3, scale: 1.0,  color: '#8a1414', anim: 'walk', radius: 0.7 },
+  grunt:  { speed: 9.5, hit: 1, scale: 0.62, color: '#6f8a4a', anim: 'ZRun',   radius: 0.45 },
+  runner: { speed: 15.0, hit: 1, scale: 0.55, color: '#a04a2a', anim: 'ZCrawl', radius: 0.4 },
+  brute:  { speed: 7.0, hit: 3, scale: 1.0,  color: '#4a2a2a', anim: 'ZWalk',  radius: 0.7 },
 };
 
 // Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.
