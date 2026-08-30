@@ -116,7 +116,7 @@ function bossUpdate(dt){
   const b = G.boss, S = G.squad, D = G.D;
   if (b.flash > 0) b.flash -= dt;
   if (b.anim){ b.anim.t += dt; if (b.anim.t > b.anim.dur) b.anim = null; }
-  if (b.phase === 'dying'){ b.dieT += dt; if (b.dieT > 1.3) bossFinish(); return; }
+  if (b.phase === 'dying'){ b.dieT += dt; if (b.dieT > 1.8) bossFinish(); return; }
   if (b.phase === 'enter'){ b.z += (b.targetZ - b.z)*Math.min(1, dt*1.4); if (b.targetZ - b.z < 0.3) b.phase = 'fight'; }
   if (b.busy && b.busy.kind === 'charge'){
     const c = b.busy; c.t += dt; const cx = laneX(c.lane);

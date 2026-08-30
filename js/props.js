@@ -118,10 +118,11 @@ function drawBoss(dt){
     let rot = 0, dy = 0;
     if (pools.boss.mutant){
       // Mutant: until its own walk/punch/death clips arrive, Run drives everything and the body language does the rest
-      if (b.phase === 'dying'){ const q = Math.min(1, b.dieT/0.9); rot = q*q*1.4; play(it, has('MDeath') ? 'MDeath' : 'Move', { once: has('MDeath'), speed: has('MDeath') ? 1 : 0.2 }); }
-      else if (b.anim && b.anim.kind === 'swing'){ const a = b.anim, q = a.t < a.dur - 0.35 ? a.t/(a.dur - 0.35) : 1 - (a.t - (a.dur - 0.35))/0.35; rot = -0.25*q; dy = 0.3*q; play(it, has('MPunch') ? 'MPunch' : 'Move', { once: has('MPunch'), speed: has('MPunch') ? 1.2/b.anim.dur : 2.2 }); }
+      if (b.phase === 'dying'){ if (!has('MDeath')){ const q = Math.min(1, b.dieT/0.9); rot = q*q*1.4; } play(it, has('MDeath') ? 'MDeath' : 'Move', { once: has('MDeath'), speed: has('MDeath') ? 1.6 : 0.2 }); }
+      else if (b.anim && b.anim.kind === 'swing'){ if (!has('MPunch')){ const a = b.anim, q = a.t < a.dur - 0.35 ? a.t/(a.dur - 0.35) : 1 - (a.t - (a.dur - 0.35))/0.35; rot = -0.25*q; dy = 0.3*q; } play(it, has('MPunch') ? 'MPunch' : 'Move', { once: has('MPunch'), speed: has('MPunch') ? 1.3/b.anim.dur : 2.2 }); }
       else if (b.busy && b.busy.kind === 'charge') play(it, 'Move', { speed: 2.0 });
-      else if (b.phase === 'enter' || !b.atLine) play(it, has('MWalk') ? 'MWalk' : 'Move', { speed: has('MWalk') ? 1 : 0.55 });
+      else if (G.intro > 0 && has('MRoar')) play(it, 'MRoar', { speed: 1 });
+      else if (b.phase === 'enter' || !b.atLine) play(it, has('MWalk') ? 'MWalk' : 'Move', { speed: has('MWalk') ? 1.3 : 0.55 });
       else play(it, has('MIdle') ? 'MIdle' : 'Move', { speed: has('MIdle') ? 1 : 0.3 });
     } else {
       if (b.phase === 'dying') play(it, 'Death', { once: true });
