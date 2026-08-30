@@ -9,10 +9,10 @@ const CFG = {
   squadZ: 0,                                                // where the squad stands
   maxSquad: 250, startSquad: 12,
   drag: 0.021,                                              // world units per screen pixel of drag
-  bulletSpeed: 34,
+  bulletSpeed: 44,
 };
 CFG.laneW = CFG.road.width / CFG.road.lanes;
-CFG.conveyor = 6;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
+CFG.conveyor = 9;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
 const GAP = { near: -9, far: -15 };                                   // the missing stretch of road in each outer lane (z range)
 const LEFT = 0, MID = 1, RIGHT = 2;
 const laneX = lane => (lane - 1) * CFG.laneW;                       // centre x of a lane
@@ -30,9 +30,9 @@ const WEAPONS = [
 
 // Every regular enemy dies to one bullet. Speeds in units/s, "hit" is what it costs you if it reaches the squad.
 const ENEMY = {
-  grunt:  { speed: 7.5, hit: 1, scale: 0.62, color: '#d52a2a', anim: 'run',  radius: 0.45 },
-  runner: { speed: 12.0, hit: 1, scale: 0.55, color: '#ff7a2a', anim: 'run',  radius: 0.4 },
-  brute:  { speed: 5.5, hit: 3, scale: 1.0,  color: '#8a1414', anim: 'walk', radius: 0.7 },
+  grunt:  { speed: 9.5, hit: 1, scale: 0.62, color: '#d52a2a', anim: 'run',  radius: 0.45 },
+  runner: { speed: 15.0, hit: 1, scale: 0.55, color: '#ff7a2a', anim: 'run',  radius: 0.4 },
+  brute:  { speed: 7.0, hit: 3, scale: 1.0,  color: '#8a1414', anim: 'walk', radius: 0.7 },
 };
 
 function difficulty(L){
@@ -40,14 +40,14 @@ function difficulty(L){
   return {
     world,
     prep:        22 + L*1.5,                              // seconds before the boss steps on
-    waveGap:     Math.max(1.15, 2.8 - L*0.05),
+    waveGap:     Math.max(1.0, 2.4 - L*0.05),
     waveSize:    Math.round(5 * Math.pow(1.095, L-1)),
     speedMult:   1 + (L-1)*0.023,
     bruteChance: Math.min(0.3, 0.04 + L*0.01),
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
     startWeapon: Math.min(3, world-1),
     plusValue:   1 + Math.floor((L-1)/8),                 // left-lane gate value: +1, then +2 from level 9, +3 from 17...
-    plusGap:     2.4, mulGap: 7.5,
+    plusGap:     2.0, mulGap: 6.5,
     jackpotGap:  1.5, jackpotWindow: 12,                  // right lane payoff once its bridge is built
     leftBoards:  5,  leftHits:  Math.round(5 * Math.pow(1.06, L-1)),
     rightBoards: 8,  rightHits: Math.round(9 * Math.pow(1.07, L-1)),

@@ -80,7 +80,7 @@ const mistTex = radialTex('rgba(215,224,236,.5)', 'rgba(215,224,236,0)');
 const MIST = Array.from({length: 6}, (_, i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ map: mistTex, transparent: true, opacity: 0.5, depthWrite: false })); m.rotation.x = -Math.PI/2; m.position.y = 0.4 + i*0.06; m.userData = { x: Math.random(), z: R.far + 8 + i*7, w: 9 + Math.random()*6, v: 0.15 + Math.random()*0.25 }; scene.add(m); return m; });
 
 function worldUpdate(dt, t, scroll){
-  roadTex.offset.y = -(scroll*0.06) % 1;
+  roadTex.offset.y = (scroll / ((CFG.road.near - CFG.road.far)/12)) % 1;   // texture repeats 12× over the road; scroll is in world units, toward the player
   for (const m of MIST){ const u = m.userData; u.x += u.v*dt*0.05; m.position.x = ((u.x % 1.4) - 0.7)*R.width*2.2; m.position.z = u.z + Math.sin(t*0.2 + u.z)*1.5; m.scale.set(u.w, 3.2, 1); }
   // camera: lean into the drag, shake on hits
   camera.up.set(Math.sin(CAM.lean*0.35), Math.cos(CAM.lean*0.35), 0);

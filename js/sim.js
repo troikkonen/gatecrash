@@ -114,7 +114,7 @@ function update(dt){
   S.target = Math.max(-lim, Math.min(lim, S.target));
   S.x += (S.target - S.x) * Math.min(1, dt*14);
   CAM.lean += ((S.target - S.x)*0.08 - CAM.lean) * 0.15;
-  G.scroll += dt * 5 * D.speedMult;
+  G.scroll += dt * CFG.conveyor * D.speedMult;
   G.recoil = Math.max(0, G.recoil - dt*6);
   if (Math.abs(S.target - S.x) > 0.1 && Math.random() < 0.5) dust(S.x + rand(-S.radius, S.radius), rand(-S.radius, S.radius)*0.8);
 
@@ -203,7 +203,7 @@ function update(dt){
   for (const c of G.corpses){ c.x += c.vx*dt; c.y += c.vy*dt; c.z += c.vz*dt; c.vy -= 18*dt; c.rot += c.vr*dt; c.life -= dt; }
   G.corpses = G.corpses.filter(c => c.life > 0);
 
-  fxUpdate(dt, 5*D.speedMult);
+  fxUpdate(dt, CFG.conveyor*D.speedMult);
   uiSquad(S.n);
 }
 function gameOver(){ if (G.dead) return; G.dead = true; SFX.lose(); uiGameOver(); }
