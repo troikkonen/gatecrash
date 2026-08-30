@@ -23,6 +23,11 @@ function drawCharacters(dt){
   poolBegin(pools.corpse);
   for (const c of G.corpses){ const it = poolTake(pools.corpse); if (!it) break; it.obj.position.set(c.x, c.y, c.z); it.obj.rotation.set(c.rot*0.8, 0, c.rot*0.5); it.obj.scale.setScalar(ENEMY[c.kind].scale); play(it, 'sad_pose'); }
   poolEnd(pools.corpse, dt);
+  // mech walker behind the squad
+  poolBegin(pools.mech);
+  if (G.mech > 0){ const it = poolTake(pools.mech); it.obj.position.set(S.x, 0, CFG.squadZ + 1.6); it.obj.rotation.set(0, Math.PI, 0); it.obj.scale.setScalar(0.7); play(it, moving ? 'Walking' : 'Idle', { speed: 1.2 });
+    FX.texts.push({ x: S.x, z: CFG.squadZ + 2.6, y: 0.2, str: '▮'.repeat(Math.max(1, Math.round(12*Math.min(1, G.mech/30)))), color: '#b6ff7d', size: 0.22, life: 0.01 }); }
+  poolEnd(pools.mech, dt);
   // block counters
   const fronts = {};
   for (const e of G.enemies){ if (!e.block) continue; const f = fronts[e.block] || (fronts[e.block] = { n: 0, z: -999 }); f.n++; if (e.z > f.z) f.z = e.z; }
@@ -36,6 +41,7 @@ function frame(now){
   const S = G.squad, w = WEAPONS[G.weapon];
   muzzleLight.position.set(S.x, 1.1, CFG.squadZ - 0.8); muzzleLight.color.set(w.color); muzzleLight.intensity = G.recoil*2.2;
   drawCharacters(run ? dt : 0);
+  drawProps();
   fxDraw(G.bullets);
   worldUpdate(dt, now/1000, G.scroll);
   renderer.render(scene, camera);

@@ -16,7 +16,7 @@ addEventListener('resize', resize); resize();
 
 // ---------- sky + fog ----------
 const SKY_TOP = 0x6f8db3, SKY_HORIZON = 0xc9d4e0;
-scene.fog = new THREE.Fog(SKY_HORIZON, 26, 60);
+scene.fog = new THREE.Fog(SKY_HORIZON, 34, 78);
 const skyGeo = new THREE.SphereGeometry(120, 24, 12);
 const skyMat = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { top: { value: new THREE.Color(SKY_TOP) }, bottom: { value: new THREE.Color(SKY_HORIZON) } },
@@ -62,7 +62,7 @@ for (const x of [-R.width/2 - 0.1, R.width/2 + 0.1]){
 (function trees(){
   const trunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 1.2, 6); trunkGeo.translate(0, 0.6, 0);
   const coneGeo = new THREE.ConeGeometry(1.1, 3.2, 7); coneGeo.translate(0, 2.6, 0);
-  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3526 }), coneMat = new THREE.MeshLambertMaterial({ color: 0x173420 });
+  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a3526 }), coneMat = new THREE.MeshLambertMaterial({ color: 0x0f2a18 });
   const N = 140, trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, N), cones = new THREE.InstancedMesh(coneGeo, coneMat, N);
   cones.castShadow = true;
   const d = new THREE.Object3D();

@@ -12,6 +12,8 @@ const CFG = {
   bulletSpeed: 34,
 };
 CFG.laneW = CFG.road.width / CFG.road.lanes;
+CFG.conveyor = 6;                                                     // how fast gates, crates and rocks come down the road (units/s, × speedMult)
+const GAP = { near: -9, far: -15 };                                   // the missing stretch of road in each outer lane (z range)
 const LEFT = 0, MID = 1, RIGHT = 2;
 const laneX = lane => (lane - 1) * CFG.laneW;                       // centre x of a lane
 const laneOfX = x => Math.min(2, Math.max(0, Math.floor((x + CFG.road.width/2) / CFG.laneW)));
@@ -44,5 +46,12 @@ function difficulty(L){
     bruteChance: Math.min(0.3, 0.04 + L*0.01),
     runnerChance:world >= 2 ? Math.min(0.3, 0.1 + (L-5)*0.015) : 0,
     startWeapon: Math.min(3, world-1),
+    plusValue:   1 + Math.floor((L-1)/8),                 // left-lane gate value: +1, then +2 from level 9, +3 from 17...
+    plusGap:     2.4, mulGap: 7.5,
+    jackpotGap:  1.5, jackpotWindow: 12,                  // right lane payoff once its bridge is built
+    leftBoards:  5,  leftHits:  Math.round(5 * Math.pow(1.06, L-1)),
+    rightBoards: 8,  rightHits: Math.round(9 * Math.pow(1.07, L-1)),
+    weaponGap:   8, rockGap: 15,
+    rockHp:      Math.round(22 * Math.pow(1.07, L-1)),
   };
 }

@@ -44,6 +44,7 @@ const charactersLoaded = Promise.all(['soldier','xbot','robot'].map(loadModel)).
   pools.brute   = makePool('xbot', 8,  { scale: 1.0,  color: ENEMY.brute.color });
   pools.corpse  = makePool('xbot', 16, { scale: 0.62, color: '#b42020' });
   pools.boss    = makePool('robot', 1, { scale: 1 });
+  pools.mech    = makePool('robot', 1, { scale: 0.7, color: '#5a8f3a' });
   charactersReady = !!(pools.soldier && pools.grunt && pools.boss);
   return charactersReady;
 });
