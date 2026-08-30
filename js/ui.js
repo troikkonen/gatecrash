@@ -46,7 +46,9 @@ canvas.addEventListener('touchmove',  e => { move(e.touches[0].clientX); e.preve
 canvas.addEventListener('touchend', up); canvas.addEventListener('touchcancel', up);
 canvas.addEventListener('mousedown', e => down(e.clientX)); addEventListener('mousemove', e => move(e.clientX)); addEventListener('mouseup', up);
 
-$('mute').onclick = toggleMute; $('mute').textContent = muted ? '🔇' : '🔊';
+$('mute').onclick = toggleMute;
+$('qual').onclick = () => setQuality(QUALITY.level === 'high' ? 'low' : 'high', true);
+setQuality(QUALITY.level); $('mute').textContent = muted ? '🔇' : '🔊';
 function hudShow(on){ $('hud').style.visibility = on ? '' : 'hidden'; $('tip').style.visibility = on ? '' : 'hidden'; }
 hudShow(false);
 $('playBtn').onclick = () => { audioInit(); $('title').style.display = 'none'; hudShow(true); G.paused = false; lastT = performance.now(); startLevel(G.level); };

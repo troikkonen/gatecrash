@@ -46,3 +46,6 @@ canvas { display:block; width:100vw; height:100vh; }
 #intro .k { position:absolute; left:18px; top:62%; font:800 13px/1 inherit; letter-spacing:.3em; color:#eaf2ff; text-shadow:0 2px 6px #000; transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }
 #intro .n { position:absolute; left:18px; top:65%; font:900 44px/1 inherit; color:#ff4d4d; text-shadow:0 3px 0 #5a0000, 0 8px 24px rgba(0,0,0,.7); transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }
 #intro .t { position:absolute; left:18px; top:72%; font:700 13px/1 inherit; color:#9fb3c8; text-shadow:0 2px 6px #000; transform:translateX(calc((var(--p, 0) - 1) * 80vw)); }
+
+#ver { position:fixed; left:12px; bottom:calc(16px + env(safe-area-inset-bottom, 0)); font:600 11px inherit; color:#9fb3c8; text-shadow:0 1px 3px #000; }
+#ver button { font:700 11px inherit; padding:3px 8px; border:0; border-radius:8px; background:rgba(5,8,14,.55); color:#eaf2ff; }

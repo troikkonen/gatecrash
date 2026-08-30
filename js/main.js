@@ -43,11 +43,15 @@ function drawCharacters(dt){
   for (const id in fronts){ const f = fronts[id]; if (f.n >= 2) FX.texts.push({ x: laneX(MID), z: f.z + 0.9, y: 0.15, str: String(f.n), color: '#fff', size: 0.55, life: 0.01 }); }
 }
 
+let fpsAcc = 0, fpsN = 0, fpsT = 0, slowFrames = 0;
 function frame(now){
-  let dt = Math.min(0.033, (now - lastT)/1000); lastT = now;
+  let dt = Math.min(0.1, (now - lastT)/1000); lastT = now;
+  fpsAcc += dt; fpsN++; if (fpsAcc >= 1){ const fps = Math.round(fpsN/fpsAcc); $('fps').textContent = fps; fpsAcc = 0; fpsN = 0;
+    if (QUALITY.auto){ if (fps < 24) slowFrames++; else slowFrames = 0; if (slowFrames >= 3 && QUALITY.level === 'high'){ setQuality('low'); slowFrames = 0; } } }
   if (G.intro > 0){ G.intro -= dt; dt *= 0.12; }
   const run = !G.paused && !G.dead;
-  if (run) update(dt);
+  // simulate in fixed-size steps so a slow phone drops frames, not game speed
+  if (run){ let left = dt; while (left > 0){ const step = Math.min(1/60, left); update(step); left -= step; } }
   const S = G.squad, w = WEAPONS[G.weapon];
   muzzleLight.position.set(S.x, 1.1, CFG.squadZ - 0.8); muzzleLight.color.set(w.color); muzzleLight.intensity = G.recoil*2.2;
   drawCharacters(run ? dt : 0);

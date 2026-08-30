@@ -157,6 +157,17 @@ composer.addPass(gradePass);
 function resizePost(){ composer.setSize(window.innerWidth, window.innerHeight); bloom.setSize(window.innerWidth, window.innerHeight); }
 addEventListener('resize', resizePost); resizePost();
 
+// ---------- quality: high = bloom + shadows + full res; low = none of that. Auto-drops on a slow phone. ----------
+const QUALITY = { level: localStorage.getItem('gc_quality') || 'high', auto: !localStorage.getItem('gc_quality') };
+function setQuality(level, manual){
+  QUALITY.level = level; if (manual){ QUALITY.auto = false; localStorage.setItem('gc_quality', level); }
+  const high = level === 'high';
+  renderer.shadowMap.enabled = high; sun.castShadow = high;
+  renderer.setPixelRatio(high ? Math.min(window.devicePixelRatio || 1, 1.75) : 1);
+  bloom.enabled = high; resize(); resizePost();
+  scene.traverse(o => { if (o.material && o.material.needsUpdate !== undefined) o.material.needsUpdate = true; });
+  const b = document.getElementById('qual'); if (b) b.textContent = high ? 'Quality: High' : 'Quality: Low';
+}
 function worldUpdate(dt, t, scroll){
   roadTex.offset.y = (scroll / ((CFG.road.near - CFG.road.far)/12)) % 1;   // texture repeats 12× over the road; scroll is in world units, toward the player
   for (const m of MIST){ const u = m.userData; u.x += u.v*dt*0.05; m.position.x = ((u.x % 1.4) - 0.7)*R.width*2.2; m.position.z = u.z + Math.sin(t*0.2 + u.z)*1.5; m.scale.set(u.w, 3.2, 1); }
