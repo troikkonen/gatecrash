@@ -22,9 +22,10 @@ function openPicker(){
   for (let L=1; L<=TOTAL_LEVELS; L++){ const b = document.createElement('button'); b.innerHTML = L + (SAVE.stars[L] ? '<s>' + '★'.repeat(SAVE.stars[L]) + '</s>' : '');
     if (L > SAVE.level) b.className = 'locked'; else b.onclick = () => { audioInit(); hudShow(true); for (const p of ['title','win','over','picker']) $(p).style.display = 'none'; G.paused = false; lastT = performance.now(); startLevel(L); };
     box.appendChild(b); }
-  G.paused = true; for (const p of ['win','over']) $(p).style.display = 'none'; $('picker').style.display = 'flex'; box.style.display = 'flex';
+  G.paused = true; pickerFromTitle = $('title').style.display === 'flex'; for (const p of ['win','over','title']) $(p).style.display = 'none'; $('picker').style.display = 'flex'; box.style.display = 'flex';
 }
-function closePicker(){ $('picker').style.display = 'none'; if ($('title').style.display === 'flex') return; if (G.dead){ (G.won ? $('win') : $('over')).style.display = 'flex'; } else { G.paused = false; lastT = performance.now(); } }
+let pickerFromTitle = false;
+function closePicker(){ $('picker').style.display = 'none'; if (pickerFromTitle){ $('title').style.display = 'flex'; return; } if (G.dead){ (G.won ? $('win') : $('over')).style.display = 'flex'; } else { G.paused = false; lastT = performance.now(); } }
 // boss intro overlay: full portrait slides in, name from the left
 const introEl = $('intro');
 function uiIntro(){

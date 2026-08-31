@@ -49,3 +49,4 @@ canvas { display:block; width:100vw; height:100vh; }
 
 #ver { position:fixed; left:12px; bottom:calc(16px + env(safe-area-inset-bottom, 0)); font:600 11px inherit; color:#9fb3c8; text-shadow:0 1px 3px #000; }
 #ver button { font:700 11px inherit; padding:3px 8px; border:0; border-radius:8px; background:rgba(5,8,14,.55); color:#eaf2ff; }
+#picker { z-index: 20; }
