@@ -30,7 +30,7 @@ function closePicker(){ $('picker').style.display = 'none'; if (pickerFromTitle)
 const introEl = $('intro');
 function uiIntro(){
   const b = G.boss;
-  if (G.intro > 0 && b){ introEl.classList.add('on'); const img = introEl.querySelector('img'); if (img.dataset.k !== b.def.img){ img.src = 'assets/' + b.def.img + '.png'; img.dataset.k = b.def.img; }
+  if (G.intro > 0 && b){ introEl.classList.add('on'); const img = introEl.querySelector('img'); if (img.dataset.k !== b.def.img){ img.src = 'assets/boss_' + b.def.img + '.png'; img.dataset.k = b.def.img; }
     introEl.querySelector('.k').textContent = b.named ? 'WORLD BOSS' : 'INCOMING'; introEl.querySelector('.n').textContent = b.def.name;
     introEl.querySelector('.t').textContent = { slam:'dodge the red lane', sweep:'step around the beam', rocks:'stay out of the circles', charge:'sidestep the rush', barrage:'two lanes at once' }[b.def.patterns[b.def.patterns.length-1]];
     introEl.style.setProperty('--p', Math.min(1, (2.6 - G.intro)*2.2)); introEl.style.opacity = Math.min(1, G.intro*2.5); }
@@ -54,5 +54,5 @@ function hudShow(on){ $('hud').style.visibility = on ? '' : 'hidden'; $('tip').s
 hudShow(false);
 $('playBtn').onclick = () => { audioInit(); $('title').style.display = 'none'; hudShow(true); G.paused = false; lastT = performance.now(); startLevel(G.level); };
 $('lvl').onclick = openPicker; $('levelsBtn').onclick = openPicker;
-function uiTitleInfo(){ const total = Object.values(SAVE.stars).reduce((a,b)=>a+b,0); const next = Math.min(TOTAL_LEVELS, SAVE.level); $('playBtn').textContent = next > 1 ? 'Continue · Level ' + next : 'Play'; $('titleBest').textContent = next > 1 ? '★ ' + total + ' of ' + TOTAL_LEVELS*3 : 'Drag to move. Everything else is automatic.'; const bossImg = (next % 5 === 0 ? BOSSES[Math.ceil(next/5)-1] : BOSSES[Math.min(5, Math.floor((next-1)/5))]).img; $('titleBoss').src = 'assets/' + bossImg + '.png'; }
+function uiTitleInfo(){ const total = Object.values(SAVE.stars).reduce((a,b)=>a+b,0); const next = Math.min(TOTAL_LEVELS, SAVE.level); $('playBtn').textContent = next > 1 ? 'Continue · Level ' + next : 'Play'; $('titleBest').textContent = next > 1 ? '★ ' + total + ' of ' + TOTAL_LEVELS*3 : 'Drag to move. Everything else is automatic.'; const bossImg = (next % 5 === 0 ? BOSSES[Math.ceil(next/5)-1] : BOSSES[Math.min(5, Math.floor((next-1)/5))]).img; $('titleBoss').src = 'assets/boss_' + bossImg + '.png'; }
 document.addEventListener('visibilitychange', () => { if (document.hidden) G.paused = true; else if (['title','win','over','picker'].every(p => $(p).style.display !== 'flex')){ G.paused = false; lastT = performance.now(); } });

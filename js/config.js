@@ -38,15 +38,16 @@ const ENEMY = {
 // Bosses: a captain on ordinary levels, a named world boss on 5/10/15/20/25/30. Each world adds an attack pattern.
 //  slam: your lane gets crushed · sweep: a beam walks across the road · rocks: boulders land on marked circles
 //  charge: it rushes down your lane and back · barrage: two lanes at once
+// model: which body walks the lane · tint/glow: how it's colored · size: scale multiplier
 const BOSSES = [
-  { name:'THE WARDEN',   img:'warden',    color:'#8a1c1c', patterns:['slam'] },
-  { name:'SCRAPJAW',     img:'scrapjaw',  color:'#5b3a8a', patterns:['slam','sweep'] },
-  { name:'STONEFIST',    img:'stonefist', color:'#5e5240', patterns:['slam','sweep','rocks'] },
-  { name:'FROSTBITE',    img:'frostbite', color:'#2f6f8a', patterns:['sweep','rocks','charge'] },
-  { name:'HELLBRAND',    img:'hellbrand', color:'#b3400f', patterns:['slam','rocks','charge','barrage'] },
-  { name:'THE PROTOCOL', img:'protocol',  color:'#1f1f2b', patterns:['slam','sweep','rocks','charge','barrage'] },
+  { name:'THE WARDEN',   img:'warden',    model:'warrok', tint:'#c9c9c9', glow:'#ff2a2a', size:1.0,  color:'#8a1c1c', patterns:['slam'] },
+  { name:'SCRAPJAW',     img:'scrapjaw',  model:'mutant', tint:'#b8a0ff', glow:'#c14dff', size:1.05, color:'#5b3a8a', patterns:['slam','sweep'] },
+  { name:'STONEFIST',    img:'stonefist', model:'warrok', tint:'#8a7f6e', glow:'#ff8a1a', size:1.15, color:'#5e5240', patterns:['slam','sweep','rocks'] },
+  { name:'FROSTBITE',    img:'frostbite', model:'mutant', tint:'#cfeaff', glow:'#4fd2ff', size:1.1,  color:'#2f6f8a', patterns:['sweep','rocks','charge'] },
+  { name:'HELLBRAND',    img:'hellbrand', model:'warrok', tint:'#3a2a2a', glow:'#ff5a1a', size:1.25, color:'#b3400f', patterns:['slam','rocks','charge','barrage'] },
+  { name:'THE PROTOCOL', img:'protocol',  model:'mutant', tint:'#2a2a33', glow:'#ffffff', size:1.3,  color:'#1f1f2b', patterns:['slam','sweep','rocks','charge','barrage'] },
 ];
-const CAPTAIN = { name:'CAPTAIN', img:'captain', color:'#9c3b2e', patterns:['slam'] };
+const CAPTAIN = { name:'CAPTAIN', img:'captain', model:'mutant', tint:'#d9c7a0', glow:'#ff7a2a', size:0.95, color:'#9c3b2e', patterns:['slam'] };
 const TOTAL_LEVELS = 30;
 
 function difficulty(L){
